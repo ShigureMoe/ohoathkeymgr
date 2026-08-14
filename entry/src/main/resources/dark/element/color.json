@@ -3,6 +3,86 @@
     {
       "name": "start_window_background",
       "value": "#000000"
+    },
+    {
+      "name": "surface",
+      "value": "#1C1C1E"
+    },
+    {
+      "name": "surface_card",
+      "value": "#2C2C2E"
+    },
+    {
+      "name": "surface_sheet",
+      "value": "#2A2A2E"
+    },
+    {
+      "name": "text_primary",
+      "value": "#E8E8E8"
+    },
+    {
+      "name": "text_secondary",
+      "value": "#9A9A9E"
+    },
+    {
+      "name": "text_hint",
+      "value": "#6E6E72"
+    },
+    {
+      "name": "text_inverse",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "divider",
+      "value": "#3A3A3C"
+    },
+    {
+      "name": "button_neutral_bg",
+      "value": "#3A3A3E"
+    },
+    {
+      "name": "button_neutral_fg",
+      "value": "#D0D0D4"
+    },
+    {
+      "name": "accent",
+      "value": "#4D8DFF"
+    },
+    {
+      "name": "accent_soft",
+      "value": "#1E2A40"
+    },
+    {
+      "name": "danger",
+      "value": "#F2685C"
+    },
+    {
+      "name": "danger_bg",
+      "value": "#8C2020"
+    },
+    {
+      "name": "mask",
+      "value": "#8A000000"
+    },
+    {
+      "name": "dim_text",
+      "value": "#7A7A7E"
+    },
+    {
+      "name": "dim_code",
+      "value": "#6E6E72"
+    },
+    {
+      "name": "ring_track",
+      "value": "#334D8DFF"
+    },
+    {
+      "name": "warning",
+      "value": "#FFA640"
+    },
+    {
+      "name": "field_bg",
+      "value": "#2C2C30"
     }
   ]
 }

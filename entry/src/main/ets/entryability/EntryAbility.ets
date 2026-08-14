@@ -1,49 +1,52 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
-
+import { AppContextHolder } from '../common/AppContextHolder';
+import { NfcListener } from '../common/NfcCardTransport';
+import { AppPreferences } from '../storage/AppPreferences';
+import { ConnectionManager } from '../service/ConnectionManager';
+import { TokenRefreshScheduler } from '../service/TokenRefreshScheduler';
+import { ThemeManager } from '../service/ThemeManager';
 const DOMAIN = 0x0000;
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+    AppContextHolder.context = this.context;
+    AppPreferences.init(this.context);
+    ConnectionManager.getInstance().init(this.context);
+    ThemeManager.apply(this.context);
+    TokenRefreshScheduler.getInstance().start();
+    hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Ability onCreate');
   }
 
   onDestroy(): void {
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
+    TokenRefreshScheduler.getInstance().stop();
+    hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Ability onDestroy');
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
-    // Main window is created, set main page for this ability
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
-
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
-        hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
+        hilog.error(DOMAIN, 'OathKeeper', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
         return;
       }
-      hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
+      hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Succeeded in loading the content.');
     });
-
-    try {
-      this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
-    } catch (err) {
-      hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
-    }
   }
 
   onWindowStageDestroy(): void {
-    // Main window is destroyed, release UI related resources
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
+    // 释放读卡器模式（退出读卡器模式并恢复卡模拟），避免窗口销毁后 NFC 监听泄漏
+    NfcListener.stop();
   }
 
   onForeground(): void {
-    // Ability has brought to foreground
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onForeground');
+    hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Ability onForeground');
+    // 恢复 NFC 待卡监听（onBackground 中已退订，系统要求退出前台即 tag.off）
+    ConnectionManager.getInstance().resumeNfcIdle();
   }
 
   onBackground(): void {
-    // Ability has back to background
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onBackground');
+    // 应用退到后台时释放读卡器模式（文档要求退出前台即调用 tag.off）
+    NfcListener.stop();
   }
 }

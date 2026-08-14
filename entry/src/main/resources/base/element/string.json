@@ -11,6 +11,10 @@
     {
       "name": "EntryAbility_label",
       "value": "OathKeeper"
+    },
+    {
+      "name": "camera_reason",
+      "value": "用于扫描 otpauth 二维码添加凭据"
     }
   ]
 }
