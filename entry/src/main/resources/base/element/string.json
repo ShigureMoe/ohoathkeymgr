@@ -2,15 +2,15 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "OATH hardware key manager for HarmonyOS"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "Manage OATH tokens on YubiKey and other hardware keys"
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "OathKeeper"
     }
   ]
 }
