@@ -33,17 +33,15 @@ export class OtpauthParser {
     throw new Error('不支持的二维码内容');
   }
 
-  /** 解析单条 otpauth:// */
+  /** 解析单条 otpauth://（兼容不带前缀的输入） */
   static parseOtpauth(uri: string): CredentialData {
-    const rest = uri.substring('otpauth://'.length);
-    const schemeEnd = rest.indexOf('://');
-    if (schemeEnd === -1) {
-      throw new Error('URI 格式不正确');
+    let rest = uri;
+    if (OtpauthParser.hasPrefix(rest, 'otpauth://')) {
+      rest = rest.substring('otpauth://'.length);
     }
-    const afterScheme = rest.substring(schemeEnd + 3);
-    const hostEnd = afterScheme.indexOf('/');
-    const host = hostEnd === -1 ? afterScheme : afterScheme.substring(0, hostEnd);
-    const pathAndQuery = hostEnd === -1 ? '' : afterScheme.substring(hostEnd + 1);
+    const hostEnd = rest.indexOf('/');
+    const host = hostEnd === -1 ? rest : rest.substring(0, hostEnd);
+    const pathAndQuery = hostEnd === -1 ? '' : rest.substring(hostEnd + 1);
     const queryIdx = pathAndQuery.indexOf('?');
     let path = queryIdx === -1 ? pathAndQuery : pathAndQuery.substring(0, queryIdx);
     const query = queryIdx === -1 ? '' : pathAndQuery.substring(queryIdx + 1);
