@@ -1,9 +1,9 @@
 {
   "app": {
     "bundleName": "com.github.ShigureMoe.ohoathkeymgr",
-    "vendor": "example",
+    "vendor": "com.github.ShigureMoe",
     "versionCode": 1000000,
-    "versionName": "1.0.0",
+    "versionName": "0.0.1",
     "buildVersion": "1",
     "icon": "$media:layered_image",
     "label": "$string:app_name"
