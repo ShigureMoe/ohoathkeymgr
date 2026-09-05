@@ -3,6 +3,7 @@
  *  - 顶栏：钥匙按钮（会话密码）、连接按钮（NFC/USB 选择弹窗）
  *  - 全局覆盖层：NFC 碰卡提示、触摸等待提示、密码输入框
  *  - 连接状态订阅：握手 ConnectionManager，FAILED → Toast
+ *  - 底栏：HdsTabs 悬浮式页签 + IMMERSIVE 沉浸光感（设备不支持时降级 SMOOTH）+ Thin 毛玻璃 + 符号图标页签
  */
 import { UsbDeviceLister, UsbCardDevice } from '../common/UsbCcidTransport';
 import { ConnectionManager, ConnectionListener } from '../service/ConnectionManager';
@@ -19,6 +20,8 @@ import { PasswordInputDialog } from '../components/PasswordInputDialog';
 import { TokenListPage } from './TokenListPage';
 import { DevicePage } from './DevicePage';
 import { SettingsPage } from './SettingsPage';
+import { HdsTabs, HdsTabsController, hdsMaterial } from '@kit.UIDesignKit';
+import { SymbolGlyphModifier } from '@kit.ArkUI';
 
 @Entry
 @Component
@@ -30,6 +33,10 @@ struct Index {
   @State currentModeText: string = 'none';
   @State currentUsbSerial: string = '';
   @State tokenStore: TokenStore = TokenStore.getInstance();
+  // 沉浸光感材质等级：默认 ADAPTIVE（系统自适应），设备不支持 IMMERSIVE 时降级 SMOOTH
+  @State materialLevel: hdsMaterial.MaterialLevel = hdsMaterial.MaterialLevel.ADAPTIVE;
+  // HdsTabs 控制器：管理悬浮式页签切换
+  private hdsController: HdsTabsController = new HdsTabsController();
   private connListener: ConnectionListener | undefined = undefined;
   @StorageProp('nfcPromptVisible') nfcPromptVisible: boolean = false;
   @StorageProp('touchPromptVisible') touchPromptVisible: boolean = false;
@@ -37,6 +44,17 @@ struct Index {
   aboutToAppear(): void {
     this.connListener = this.buildListener();
     ConnectionManager.getInstance().subscribe(this.connListener);
+
+    // FR-003：检测设备沉浸光感材质能力；不含 IMMERSIVE 时降级 SMOOTH 以避免卡顿与发热
+    try {
+      const supportedTypes: Array<hdsMaterial.MaterialType> = hdsMaterial.getSystemMaterialTypes();
+      if (!supportedTypes.includes(hdsMaterial.MaterialType.IMMERSIVE)) {
+        this.materialLevel = hdsMaterial.MaterialLevel.SMOOTH;
+      }
+    } catch (e) {
+      // 检测接口异常时按保守策略降级 SMOOTH
+      this.materialLevel = hdsMaterial.MaterialLevel.SMOOTH;
+    }
   }
 
   aboutToDisappear(): void {
@@ -74,7 +92,7 @@ struct Index {
           }
         })
 
-        Tabs({ barPosition: BarPosition.End, index: this.currentTab }) {
+        HdsTabs({ controller: this.hdsController }) {
           TabContent() {
             TokenListPage({
               store: this.tokenStore,
@@ -83,7 +101,7 @@ struct Index {
               }
             })
           }
-          .tabBar('令牌')
+          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.key_horizontal')) }, '令牌'))
 
           TabContent() {
             DevicePage({
@@ -92,7 +110,7 @@ struct Index {
               }
             })
           }
-          .tabBar('设备管理')
+          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.nfc')) }, '设备管理'))
 
           TabContent() {
             SettingsPage({
@@ -101,8 +119,19 @@ struct Index {
               }
             })
           }
-          .tabBar('设置')
+          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')) }, '设置'))
         }
+        .barPosition(BarPosition.End)
+        .vertical(false)
+        .barOverlap(true)
+        .barBackgroundBlurStyle(BlurStyle.Thin)
+        .barFloatingStyle({
+          barBottomMargin: 0,
+          systemMaterialEffect: {
+            materialType: hdsMaterial.MaterialType.IMMERSIVE,
+            materialLevel: this.materialLevel
+          }
+        })
         .onChange((index: number) => {
           this.currentTab = index;
         })
