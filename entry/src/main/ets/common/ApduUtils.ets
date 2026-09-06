@@ -154,9 +154,16 @@ export class Apdu {
     return Apdu.format(0x00, 0xA4, 0x04, 0x00, aid, 0);
   }
 
-  /** GET RESPONSE：00 C0 00 00（响应链读取，SW1=0x61 时循环调用） */
-  static getResponse(): Uint8Array {
-    return Apdu.format(0x00, 0xC0, 0x00, 0x00, new Uint8Array(0), 0);
+  /**
+   * SEND_REMAINING：00 A5 00 00 [Le]（OATH 响应链续传，逆向自 yubikit ResponseChainingProcessor，
+   * INS.SEND_REMAINING=0xA5）。YubiKey 与 CanoKey 的 OATH 应用均不支持标准 GET RESPONSE(0xC0)。
+   * Le 取上次 SW2（剩余字节数）；SW2=0 时发 case-1 四字节形式。
+   */
+  static sendRemaining(le: number): Uint8Array {
+    if (le <= 0) {
+      return new Uint8Array([0x00, 0xA5, 0x00, 0x00]);
+    }
+    return new Uint8Array([0x00, 0xA5, 0x00, 0x00, le & 0xFF]);
   }
 
   static readonly SW_OK = 0x9000;
@@ -183,12 +190,18 @@ export class SmartCardProtocol {
   async sendApdu(cla: number, ins: number, p1: number, p2: number, data: Uint8Array, le: number): Promise<Uint8Array> {
     const apdu = Apdu.format(cla, ins, p1, p2, data, le);
     let response = await this.conn.transmit(apdu);
-    // 响应链：SW1=0x61 表示还有更多数据，循环 GET RESPONSE（逆向自 ResponseChainingProcessor）
+    // 响应链：SW1=0x61 表示还有更多数据，以 SW2 为 Le 循环 SEND_REMAINING
+    // （逆向自 yubikit ResponseChainingProcessor；OATH 应用不支持标准 GET RESPONSE）
     let buf = new Uint8Array(0);
     let sw1 = response.length >= 2 ? response[response.length - 2] : 0;
+    let chainGuard = 0;
     while (sw1 === 0x61) {
       buf = ApduUtils.concat(buf, response.subarray(0, response.length - 2));
-      response = await this.conn.transmit(Apdu.getResponse());
+      chainGuard += 1;
+      if (chainGuard > 32) {
+        throw new Error('APDU response chain too long');
+      }
+      response = await this.conn.transmit(Apdu.sendRemaining(response[response.length - 1]));
       sw1 = response.length >= 2 ? response[response.length - 2] : 0;
     }
     buf = ApduUtils.concat(buf, response);
