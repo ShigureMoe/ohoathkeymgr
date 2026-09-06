@@ -17,18 +17,19 @@ export struct TopBar {
       Text('OathKeeper')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor($r('app.color.surface_sheet'))
+        .fontColor($r('app.color.text_primary'))
         .margin({ left: 16 })
       Blank()
       Button() {
         Image($r('app.media.key_horizontal'))
           .width(22)
           .height(22)
+          .fillColor($r('app.color.text_primary'))
       }
       .width(40)
       .height(40)
       .borderRadius(20)
-      .backgroundColor('#33FFFFFF')
+      .backgroundColor($r('app.color.button_neutral_bg'))
       .margin({ right: 8 })
       .onClick(() => {
         this.onKeyClick();
@@ -38,25 +39,28 @@ export struct TopBar {
           Image($r('app.media.nfc'))
             .width(22)
             .height(22)
+            .fillColor($r('app.color.text_primary'))
         } else if (this.status === 'connecting') {
           LoadingProgress()
             .width(22)
             .height(22)
-            .color($r('app.color.surface_sheet'))
+            .color($r('app.color.text_primary'))
         } else if (this.status === 'connected') {
           Image($r('app.media.checkmark_square_fill'))
             .width(22)
             .height(22)
+            .fillColor($r('app.color.text_primary'))
         } else {
           Image($r('app.media.link_slash'))
             .width(22)
             .height(22)
+            .fillColor($r('app.color.text_primary'))
         }
       }
       .width(40)
       .height(40)
       .borderRadius(20)
-      .backgroundColor('#33FFFFFF')
+      .backgroundColor($r('app.color.button_neutral_bg'))
       .margin({ right: 16 })
       .onClick(() => {
         this.onConnectClick();
@@ -65,6 +69,6 @@ export struct TopBar {
     .width('100%')
     .height(56)
     .alignItems(VerticalAlign.Center)
-    .backgroundColor($r('app.color.accent'))
+    .backgroundBlurStyle(BlurStyle.Thin)
   }
 }

@@ -25,7 +25,7 @@ export struct DevicePage {
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .alignSelf(ItemAlign.Start)
-          .margin({ top: 16, left: 20 })
+          .margin({ top: 72, left: 20 })
 
         if (this.deviceInfo === undefined) {
           Text('请先连接安全卡片')
@@ -84,6 +84,7 @@ export struct DevicePage {
               .height(40)
               .fontSize(14)
               .backgroundColor($r('app.color.accent'))
+              .fontColor($r('app.color.on_accent'))
               .enabled(!this.busy)
               .onClick(() => {
                 this.submitChange();

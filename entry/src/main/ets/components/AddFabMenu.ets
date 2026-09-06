@@ -26,7 +26,7 @@ export struct AddFabMenu {
               .fontSize(14)
           }
           .padding({ left: 14, right: 14, top: 10, bottom: 10 })
-          .backgroundColor($r('app.color.surface_sheet'))
+          .backgroundBlurStyle(BlurStyle.Thin)
           .borderRadius(18)
           .shadow({ radius: 10, color: '#33000000', offsetY: 2 })
           .onClick(() => {
@@ -40,7 +40,7 @@ export struct AddFabMenu {
               .fontSize(14)
           }
           .padding({ left: 14, right: 14, top: 10, bottom: 10 })
-          .backgroundColor($r('app.color.surface_sheet'))
+          .backgroundBlurStyle(BlurStyle.Thin)
           .borderRadius(18)
           .shadow({ radius: 10, color: '#33000000', offsetY: 2 })
           .onClick(() => {
@@ -56,12 +56,13 @@ export struct AddFabMenu {
         Text(this.expanded ? '×' : '+')
           .fontSize(30)
           .fontWeight(FontWeight.Normal)
-          .fontColor($r('app.color.surface_sheet'))
+          .fontColor($r('app.color.text_primary'))
       }
       .width(56)
       .height(56)
       .borderRadius(28)
-      .backgroundColor($r('app.color.accent'))
+      .backgroundColor(Color.Transparent)
+      .backgroundBlurStyle(BlurStyle.Thin)
       .shadow({ radius: 12, color: '#44000000', offsetY: 3 })
       .margin({ right: 18, bottom: 74 })
       .zIndex(3)

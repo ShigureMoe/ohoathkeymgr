@@ -166,6 +166,7 @@ export struct ManualAddSheet {
               .height(44)
               .fontSize(15)
               .backgroundColor($r('app.color.accent'))
+              .fontColor($r('app.color.on_accent'))
               .enabled(!this.busy)
               .margin({ top: 6 })
               .onClick(() => {

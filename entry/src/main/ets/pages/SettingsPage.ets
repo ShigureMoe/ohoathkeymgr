@@ -29,7 +29,7 @@ export struct SettingsPage {
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .alignSelf(ItemAlign.Start)
-          .margin({ left: 20, top: 16 })
+          .margin({ left: 20, top: 72 })
 
         Column({ space: 0 }) {
           Row() {

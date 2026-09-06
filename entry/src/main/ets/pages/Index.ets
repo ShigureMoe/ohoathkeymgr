@@ -82,64 +82,60 @@ struct Index {
 
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
-      Column() {
-        TopBar({
-          onKeyClick: () => {
-            this.configureSessionPassword();
-          },
-          onConnectClick: () => {
-            this.openConnectSheet();
-          }
-        })
-
-        HdsTabs({ controller: this.hdsController }) {
-          TabContent() {
-            TokenListPage({
-              store: this.tokenStore,
-              toast: (msg: string) => {
-                this.toast(msg);
-              }
-            })
-          }
-          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.key_horizontal')) }, '令牌'))
-
-          TabContent() {
-            DevicePage({
-              toast: (msg: string) => {
-                this.toast(msg);
-              }
-            })
-          }
-          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.nfc')) }, '设备管理'))
-
-          TabContent() {
-            SettingsPage({
-              toast: (msg: string) => {
-                this.toast(msg);
-              }
-            })
-          }
-          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')) }, '设置'))
+      HdsTabs({ controller: this.hdsController }) {
+        TabContent() {
+          TokenListPage({
+            store: this.tokenStore,
+            toast: (msg: string) => {
+              this.toast(msg);
+            }
+          })
         }
-        .barPosition(BarPosition.End)
-        .vertical(false)
-        .barOverlap(true)
-        .barBackgroundBlurStyle(BlurStyle.Thin)
-        .barFloatingStyle({
-          barBottomMargin: 0,
-          systemMaterialEffect: {
-            materialType: hdsMaterial.MaterialType.IMMERSIVE,
-            materialLevel: this.materialLevel
-          }
-        })
-        .onChange((index: number) => {
-          this.currentTab = index;
-        })
-        .width('100%')
-        .layoutWeight(1)
+        .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.key_horizontal')) }, '令牌'))
+
+        TabContent() {
+          DevicePage({
+            toast: (msg: string) => {
+              this.toast(msg);
+            }
+          })
+        }
+        .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.nfc')) }, '设备管理'))
+
+        TabContent() {
+          SettingsPage({
+            toast: (msg: string) => {
+              this.toast(msg);
+            }
+          })
+        }
+        .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')) }, '设置'))
       }
+      .barPosition(BarPosition.End)
+      .vertical(false)
+      .barOverlap(true)
+      .barBackgroundBlurStyle(BlurStyle.Thin)
+      .barFloatingStyle({
+        barBottomMargin: 0,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.IMMERSIVE,
+          materialLevel: this.materialLevel
+        }
+      })
+      .onChange((index: number) => {
+        this.currentTab = index;
+      })
       .width('100%')
       .height('100%')
+
+      TopBar({
+        onKeyClick: () => {
+          this.configureSessionPassword();
+        },
+        onConnectClick: () => {
+          this.openConnectSheet();
+        }
+      })
 
       // ---- 全局覆盖层 ----
       ConnectSheet({

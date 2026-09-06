@@ -46,6 +46,7 @@ export struct PasswordInputDialog {
               .height(38)
               .fontSize(14)
               .backgroundColor($r('app.color.accent'))
+              .fontColor($r('app.color.on_accent'))
               .onClick(() => {
                 UiDialogBridge.submit(this.inputValue);
               })

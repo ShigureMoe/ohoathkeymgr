@@ -83,6 +83,7 @@ export struct TokenListItemComp {
               .height(30)
               .fontSize(12)
               .backgroundColor($r('app.color.accent'))
+              .fontColor($r('app.color.on_accent'))
               .margin({ right: 16 })
               .onClick(() => {
                 this.callbacks.onHotpRefresh(this.item.cred.name);

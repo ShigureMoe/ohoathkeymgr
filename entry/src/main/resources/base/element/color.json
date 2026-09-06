@@ -46,11 +46,15 @@
     },
     {
       "name": "accent",
-      "value": "#005DFF"
+      "value": "#1A1A1A"
+    },
+    {
+      "name": "on_accent",
+      "value": "#FFFFFF"
     },
     {
       "name": "accent_soft",
-      "value": "#F0F5FF"
+      "value": "#F0F0F2"
     },
     {
       "name": "danger",
@@ -74,7 +78,7 @@
     },
     {
       "name": "ring_track",
-      "value": "#22005DFF"
+      "value": "#221A1A1A"
     },
     {
       "name": "warning",
