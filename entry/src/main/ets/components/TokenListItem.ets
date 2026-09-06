@@ -70,7 +70,7 @@ export struct TokenListItemComp {
               Text(this.item.code)
                 .fontSize(24)
                 .fontWeight(FontWeight.Bold)
-                .fontColor($r('app.color.accent'))
+                .fontColor($r('app.color.token_accent'))
                 .letterSpacing(2)
                 .gesture(
                   LongPressGesture({ repeat: false }).onAction((event: GestureEvent) => {
@@ -78,16 +78,19 @@ export struct TokenListItemComp {
                   })
                 )
             }
-            Button(this.item.state === TokenItemState.ACTIVE ? '↻' : '刷新')
-              .width(this.item.state === TokenItemState.ACTIVE ? 34 : 56)
-              .height(30)
-              .fontSize(12)
-              .backgroundColor($r('app.color.accent'))
-              .fontColor($r('app.color.on_accent'))
-              .margin({ right: 16 })
-              .onClick(() => {
-                this.callbacks.onHotpRefresh(this.item.cred.name);
-              })
+            Button({ type: ButtonType.Circle }) {
+              Image($r('app.media.icon_refresh'))
+                .width(18)
+                .height(18)
+                .fillColor($r('app.color.on_token_accent'))
+            }
+            .width(36)
+            .height(36)
+            .backgroundColor($r('app.color.token_accent'))
+            .margin({ right: 16 })
+            .onClick(() => {
+              this.callbacks.onHotpRefresh(this.item.cred.name);
+            })
           }
           .margin({ right: 0 })
         } else if (this.item.state === TokenItemState.TOUCH ||
@@ -108,7 +111,7 @@ export struct TokenListItemComp {
             Text(this.item.code.length > 0 ? this.item.code : '--')
               .fontSize(24)
               .fontWeight(FontWeight.Bold)
-              .fontColor(this.isDim() ? $r('app.color.text_secondary') : $r('app.color.accent'))
+              .fontColor(this.isDim() ? $r('app.color.text_secondary') : $r('app.color.token_accent'))
               .letterSpacing(2)
               .gesture(
                 LongPressGesture({ repeat: false }).onAction((event: GestureEvent) => {

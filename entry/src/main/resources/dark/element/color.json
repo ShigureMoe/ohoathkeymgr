@@ -87,6 +87,14 @@
     {
       "name": "field_bg",
       "value": "#2C2C30"
+    },
+    {
+      "name": "token_accent",
+      "value": "#4C8DF6"
+    },
+    {
+      "name": "on_token_accent",
+      "value": "#FFFFFF"
     }
   ]
 }

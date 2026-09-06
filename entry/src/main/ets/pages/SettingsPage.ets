@@ -24,56 +24,59 @@ export struct SettingsPage {
 
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
-      Column({ space: 12 }) {
-        Text('设置')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .alignSelf(ItemAlign.Start)
-          .margin({ left: 20, top: 72 })
+      Scroll() {
+        Column({ space: 12 }) {
+          Text('设置')
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .alignSelf(ItemAlign.Start)
+            .margin({ left: 20 })
 
-        Column({ space: 0 }) {
+          Column({ space: 0 }) {
+            Row() {
+              Text('暗黑模式')
+                .fontSize(15)
+              Blank()
+            }
+            .width('100%')
+            .padding(16)
+            Column({ space: 12 }) {
+              this.themeRow('跟随系统', ThemeManager.THEME_SYSTEM)
+              this.themeRow('深色', ThemeManager.THEME_DARK)
+              this.themeRow('亮色', ThemeManager.THEME_LIGHT)
+            }
+            .width('100%')
+            .padding({ left: 16, right: 16, bottom: 14 })
+          }
+          .width('92%')
+          .backgroundColor($r('app.color.surface_card'))
+          .borderRadius(10)
+
           Row() {
-            Text('暗黑模式')
+            Text('重置安全卡片')
               .fontSize(15)
+              .fontColor(this.connMode === 'none' ? $r('app.color.text_hint') : $r('app.color.danger'))
             Blank()
+            Text('>')
+              .fontSize(15)
+              .fontColor($r('app.color.text_hint'))
           }
-          .width('100%')
+          .width('92%')
           .padding(16)
-          Column({ space: 12 }) {
-            this.themeRow('跟随系统', ThemeManager.THEME_SYSTEM)
-            this.themeRow('深色', ThemeManager.THEME_DARK)
-            this.themeRow('亮色', ThemeManager.THEME_LIGHT)
-          }
-          .width('100%')
-          .padding({ left: 16, right: 16, bottom: 14 })
+          .backgroundColor($r('app.color.surface_card'))
+          .borderRadius(10)
+          .enabled(this.connMode !== 'none')
+          .onClick(() => {
+            this.resetInput = '';
+            this.resetDialogVisible = true;
+          })
         }
-        .width('92%')
-        .backgroundColor($r('app.color.surface_card'))
-        .borderRadius(10)
-
-        Row() {
-          Text('重置安全卡片')
-            .fontSize(15)
-            .fontColor(this.connMode === 'none' ? $r('app.color.text_hint') : $r('app.color.danger'))
-          Blank()
-          Text('>')
-            .fontSize(15)
-            .fontColor($r('app.color.text_hint'))
-        }
-        .width('92%')
-        .padding(16)
-        .backgroundColor($r('app.color.surface_card'))
-        .borderRadius(10)
-        .enabled(this.connMode !== 'none')
-        .onClick(() => {
-          this.resetInput = '';
-          this.resetDialogVisible = true;
-        })
-
-        Blank()
+        .width('100%')
+        .padding({ top: 72, bottom: 156 })
       }
       .width('100%')
       .height('100%')
+      .align(Alignment.Start)
 
       if (this.resetDialogVisible) {
         this.resetDialog()

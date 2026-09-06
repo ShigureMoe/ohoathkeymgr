@@ -53,7 +53,8 @@ export struct TokenListPage {
         }
         .width('100%')
         .height('100%')
-        .padding({ top: 64, bottom: 146 })
+        .contentStartOffset(72)
+        .contentEndOffset(156)
       }
 
       AddFabMenu({

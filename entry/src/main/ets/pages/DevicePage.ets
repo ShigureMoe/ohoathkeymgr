@@ -20,85 +20,89 @@ export struct DevicePage {
 
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
-      Column({ space: 14 }) {
-        Text('设备信息')
-          .fontSize(16)
-          .fontWeight(FontWeight.Bold)
-          .alignSelf(ItemAlign.Start)
-          .margin({ top: 72, left: 20 })
-
-        if (this.deviceInfo === undefined) {
-          Text('请先连接安全卡片')
-            .fontSize(14)
-            .fontColor($r('app.color.text_secondary'))
+      Scroll() {
+        Column({ space: 14 }) {
+          Text('设备信息')
+            .fontSize(16)
+            .fontWeight(FontWeight.Bold)
             .alignSelf(ItemAlign.Start)
-            .margin({ left: 20, top: 12 })
-        } else {
-          Column({ space: 10 }) {
-            this.infoRow('设备类型', this.deviceInfo.ykmanInfo.deviceType)
-            this.infoRow('序列号', this.serialText())
-            this.infoRow('固件版本', this.deviceInfo.ykmanInfo.firmwareVersion)
-            this.infoRow('OATH 版本', this.deviceInfo.oathInfo.oathVersion)
-            this.infoRow('密码保护', this.pwdProtectionText())
-            this.infoRow('凭据数量', String(this.credentialCount))
-          }
-          .width('100%')
-          .padding({ left: 20, right: 20, top: 4 })
-        }
+            .margin({ left: 20 })
 
-        Row() {
-          Text('修改安全密码')
-            .fontSize(15)
-            .fontColor($r('app.color.accent'))
-          Blank()
-          Text('>')
-            .fontSize(15)
-            .fontColor($r('app.color.text_hint'))
-        }
-        .width('92%')
-        .padding(16)
-        .backgroundColor($r('app.color.surface_card'))
-        .borderRadius(10)
-        .margin({ top: 20 })
-        .onClick(() => {
-          this.showChangePass = !this.showChangePass;
-        })
-
-        if (this.showChangePass) {
-          Column({ space: 10 }) {
-            Text(this.changePassHint())
-              .fontSize(12)
-              .fontColor($r('app.color.text_secondary'))
-            TextInput({ placeholder: '新密码（留空并确认 = 移除密码）', text: this.newPwd })
-              .type(InputType.Password)
-              .onChange((v: string) => {
-                this.newPwd = v;
-              })
-            TextInput({ placeholder: '确认新密码', text: this.confirmPwd })
-              .type(InputType.Password)
-              .onChange((v: string) => {
-                this.confirmPwd = v;
-              })
-            Button(this.busy ? '提交中…' : '提交')
-              .width('100%')
-              .height(40)
+          if (this.deviceInfo === undefined) {
+            Text('请先连接安全卡片')
               .fontSize(14)
-              .backgroundColor($r('app.color.accent'))
-              .fontColor($r('app.color.on_accent'))
-              .enabled(!this.busy)
-              .onClick(() => {
-                this.submitChange();
-              })
+              .fontColor($r('app.color.text_secondary'))
+              .alignSelf(ItemAlign.Start)
+              .margin({ left: 20, top: 12 })
+          } else {
+            Column({ space: 10 }) {
+              this.infoRow('设备类型', this.deviceInfo.ykmanInfo.deviceType)
+              this.infoRow('序列号', this.serialText())
+              this.infoRow('固件版本', this.deviceInfo.ykmanInfo.firmwareVersion)
+              this.infoRow('OATH 版本', this.deviceInfo.oathInfo.oathVersion)
+              this.infoRow('密码保护', this.pwdProtectionText())
+              this.infoRow('凭据数量', String(this.credentialCount))
+            }
+            .width('100%')
+            .padding({ left: 20, right: 20, top: 4 })
+          }
+
+          Row() {
+            Text('修改安全密码')
+              .fontSize(15)
+              .fontColor($r('app.color.accent'))
+            Blank()
+            Text('>')
+              .fontSize(15)
+              .fontColor($r('app.color.text_hint'))
           }
           .width('92%')
-          .padding(14)
+          .padding(16)
           .backgroundColor($r('app.color.surface_card'))
           .borderRadius(10)
+          .margin({ top: 20 })
+          .onClick(() => {
+            this.showChangePass = !this.showChangePass;
+          })
+
+          if (this.showChangePass) {
+            Column({ space: 10 }) {
+              Text(this.changePassHint())
+                .fontSize(12)
+                .fontColor($r('app.color.text_secondary'))
+              TextInput({ placeholder: '新密码（留空并确认 = 移除密码）', text: this.newPwd })
+                .type(InputType.Password)
+                .onChange((v: string) => {
+                  this.newPwd = v;
+                })
+              TextInput({ placeholder: '确认新密码', text: this.confirmPwd })
+                .type(InputType.Password)
+                .onChange((v: string) => {
+                  this.confirmPwd = v;
+                })
+              Button(this.busy ? '提交中…' : '提交')
+                .width('100%')
+                .height(40)
+                .fontSize(14)
+                .backgroundColor($r('app.color.accent'))
+                .fontColor($r('app.color.on_accent'))
+                .enabled(!this.busy)
+                .onClick(() => {
+                  this.submitChange();
+                })
+            }
+            .width('92%')
+            .padding(14)
+            .backgroundColor($r('app.color.surface_card'))
+            .borderRadius(10)
+          }
         }
-        Blank()
+        .width('100%')
+        .padding({ top: 72, bottom: 156 })
       }
       .width('100%')
       .height('100%')
+      .align(Alignment.Start)
     }
     .width('100%')
     .height('100%')

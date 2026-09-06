@@ -100,7 +100,8 @@ struct Index {
             }
           })
         }
-        .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.nfc')) }, '设备管理'))
+        .tabBar(new BottomTabBarStyle($r('app.media.security_card'), '设备管理')
+          .iconStyle({ unselectedColor: $r('app.color.text_secondary'), selectedColor: $r('app.color.token_accent') }))
 
         TabContent() {
           SettingsPage({
@@ -114,7 +115,7 @@ struct Index {
       .barPosition(BarPosition.End)
       .vertical(false)
       .barOverlap(true)
-      .barBackgroundBlurStyle(BlurStyle.Thin)
+      .barBackgroundBlurStyle(BlurStyle.COMPONENT_ULTRA_THIN)
       .barFloatingStyle({
         barBottomMargin: 0,
         systemMaterialEffect: {
