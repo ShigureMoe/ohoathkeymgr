@@ -6,8 +6,13 @@ export class AppPreferences {
   private static store: preferences.Preferences | undefined = undefined;
   private static readonly STORE_NAME = 'oath_keeper';
 
-  static async init(context: common.Context): Promise<void> {
-    AppPreferences.store = await preferences.getPreferences(context, AppPreferences.STORE_NAME);
+  /** 同步加载偏好存储（getPreferencesSync，实例有缓存）：调用返回后即可读取，消除启动期读取竞态；加载异常时保持 store 未就绪，读取方按默认值回退（主题默认跟随系统），不抛出 */
+  static init(context: common.Context): void {
+    try {
+      AppPreferences.store = preferences.getPreferencesSync(context, { name: AppPreferences.STORE_NAME });
+    } catch (e) {
+      // 偏好加载失败（如文件损坏）：保持 store 为 undefined，getString 等按默认值回退，应用按"跟随系统"启动
+    }
   }
 
   static getString(key: string, def: string): string {
