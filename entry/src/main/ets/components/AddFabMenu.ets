@@ -49,7 +49,7 @@ export struct AddFabMenu {
           })
         }
         .alignItems(HorizontalAlign.End)
-        .margin({ right: 12, bottom: 158 })
+        .margin({ right: 12, bottom: 124 })
         .zIndex(2)
       }
       Button() {
@@ -63,7 +63,7 @@ export struct AddFabMenu {
       .borderRadius(28)
       .backgroundColor($r('app.color.accent'))
       .shadow({ radius: 12, color: '#44000000', offsetY: 3 })
-      .margin({ right: 18, bottom: 108 })
+      .margin({ right: 18, bottom: 74 })
       .zIndex(3)
       .onClick(() => {
         this.expanded = !this.expanded;
