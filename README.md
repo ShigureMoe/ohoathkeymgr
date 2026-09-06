@@ -37,7 +37,7 @@ devecocli build
 devecocli run
 ```
 
-也可在 DevEco Studio 中打开工程后直接 Run。应用权限：`ohos.permission.NFC_TAG`、`ohos.permission.CAMERA`（扫码）。真机调试需自行配置签名。
+也可在 DevEco Studio 中打开工程后直接 Run。应用权限：`ohos.permission.NFC_TAG`（扫码使用系统 Scan Kit 默认界面，无需相机权限）。真机调试需自行配置签名。
 
 ## 使用说明
 
