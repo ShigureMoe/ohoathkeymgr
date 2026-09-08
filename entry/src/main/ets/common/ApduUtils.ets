@@ -1,12 +1,15 @@
 /**
  * APDU / TLV 协议工具层
  * 全部依据对 example/yubikey-manager 的逆向：
- *  - yubikit/core/smartcard/__init__.py：AID、ShortApduFormatter、ResponseChainingProcessor(0x61→0xC0)
+ *  - yubikit/core/smartcard/__init__.py：AID、ShortApduFormatter、ResponseChainingProcessor
+ *    （SW1=0x61 循环续传，续传指令可参数化：smartcard 层默认 GET RESPONSE=0xC0）
  *  - yubikit/core/__init__.py：Tlv、Version
  *  - yubikit/oath.py：OATH SELECT 响应解析（TAG_VERSION=0x79 / TAG_CHALLENGE=0x74）
  *  - yubikit/management.py：INS_READ_CONFIG=0x1D 分页读 DeviceInfo TLV
  */
 import { util } from '@kit.ArkTS';
+import { CardIdentity } from './CardVendor';
+import { errorMessage } from './Log';
 
 /** YubiKey 智能卡应用 AID（逆向自 core/smartcard AID 枚举） */
 export class Aids {
@@ -155,16 +158,19 @@ export class Apdu {
   }
 
   /**
-   * SEND_REMAINING：00 A5 00 00 [Le]（OATH 响应链续传，逆向自 yubikit ResponseChainingProcessor，
-   * INS.SEND_REMAINING=0xA5）。YubiKey 与 CanoKey 的 OATH 应用均不支持标准 GET RESPONSE(0xC0)。
-   * Le 取上次 SW2（剩余字节数）；SW2=0 时发 case-1 四字节形式。
+   * 响应链续传指令：00 [ins] 00 00 00（逆向自 yubikit ResponseChainingProcessor——
+   * 续传时不携带 Le，data/Le 均为空时 ShortApduFormatter 补 Lc=0，成 5 字节形式）。
+   * OATH 应用传 INS_SEND_REMAINING(0xA5)：YubiKey 与 CanoKey 的 OATH 应用均不支持
+   * 标准 GET RESPONSE(0xC0)；其他 applet（Management 等）用 INS_GET_RESPONSE(0xC0)。
    */
-  static sendRemaining(le: number): Uint8Array {
-    if (le <= 0) {
-      return new Uint8Array([0x00, 0xA5, 0x00, 0x00]);
-    }
-    return new Uint8Array([0x00, 0xA5, 0x00, 0x00, le & 0xFF]);
+  static sendRemaining(ins: number): Uint8Array {
+    return Apdu.format(0x00, ins, 0x00, 0x00, new Uint8Array(0), 0);
   }
+
+  /** smartcard 层默认续传指令（逆向自 core/smartcard INS_SEND_REMAINING） */
+  static readonly INS_GET_RESPONSE = 0xC0;
+  /** OATH 应用的续传指令（逆向自 oath.py INS_SEND_REMAINING） */
+  static readonly INS_SEND_REMAINING = 0xA5;
 
   static readonly SW_OK = 0x9000;
   /** SELECT 失败的应用不可用 SW 集合（逆向自 SmartCardProtocol.select） */
@@ -177,32 +183,66 @@ export interface CardTransport {
   transmit(apdu: Uint8Array): Promise<Uint8Array>;
   /** 关闭连接（USB 下电后释放管道；NFC 重置连接） */
   close(): Promise<void>;
+  /**
+   * 设备身份原始信息（逆向自 yubikit connection.pid/atr 属性）：USB 为 VID/PID，
+   * NFC 为 ATS 历史字节。厂商识别统一走 common/CardVendor 的 CardDetector，
+   * 传输层不感知具体厂商，避免每支持一个厂商就在接口上加一个 isXxx()。
+   */
+  getIdentity(): CardIdentity;
 }
 
 /** 智能卡协议层：SELECT + 响应链 + SW 校验（对标 SmartCardProtocol） */
 export class SmartCardProtocol {
   private conn: CardTransport;
+  /** 响应链续传指令：OATH 应用为 SEND_REMAINING(0xA5)，其余 applet 默认 GET RESPONSE(0xC0) */
+  private readonly insSendRemaining: number;
+  /**
+   * 成功后继续读（逆向自 canokey-manager ResponseChainingProcessor.read_on_success）：
+   * CanoKey 固件 <3.0.1 不支持标准 61xx 响应链，响应未传完也会返回 SW=9000，
+   * 需在 9000 后继续发续传指令探测，直至返回 6985(no more data)/6982(applet locked)。
+   */
+  private readonly readOnSuccess: boolean;
+  /** 响应链最大续传帧数（防御异常设备无限链：NFC 每帧 ≤256B，32 帧 = 8KB 上限） */
+  private static readonly MAX_CHAIN_FRAMES = 32;
 
-  constructor(conn: CardTransport) {
+  constructor(conn: CardTransport, insSendRemaining: number = Apdu.INS_GET_RESPONSE,
+    readOnSuccess: boolean = false) {
     this.conn = conn;
+    this.insSendRemaining = insSendRemaining;
+    this.readOnSuccess = readOnSuccess;
+  }
+
+  private static swOf(resp: Uint8Array): number {
+    return resp.length >= 2 ? ((resp[resp.length - 2] << 8) | resp[resp.length - 1]) : 0;
   }
 
   async sendApdu(cla: number, ins: number, p1: number, p2: number, data: Uint8Array, le: number): Promise<Uint8Array> {
     const apdu = Apdu.format(cla, ins, p1, p2, data, le);
     let response = await this.conn.transmit(apdu);
-    // 响应链：SW1=0x61 表示还有更多数据，以 SW2 为 Le 循环 SEND_REMAINING
-    // （逆向自 yubikit ResponseChainingProcessor；OATH 应用不支持标准 GET RESPONSE）
+    // 响应链（逆向自 yubikit ResponseChainingProcessor）：SW1=0x61 表示还有更多数据，
+    // 循环续传（续传指令按 applet 参数化，OATH=0xA5；续传 APDU 不携带 Le）；
+    // readOnSuccess=true 时 SW=9000 后仍探测一次续传（CanoKey 固件 <3.0.1 兼容）。
     let buf = new Uint8Array(0);
-    let sw1 = response.length >= 2 ? response[response.length - 2] : 0;
     let chainGuard = 0;
-    while (sw1 === 0x61) {
+    for (;;) {
+      const sw = SmartCardProtocol.swOf(response);
+      if ((sw >> 8) !== 0x61 && !(this.readOnSuccess && sw === Apdu.SW_OK)) {
+        break;
+      }
       buf = ApduUtils.concat(buf, response.subarray(0, response.length - 2));
       chainGuard += 1;
-      if (chainGuard > 32) {
+      if (chainGuard > SmartCardProtocol.MAX_CHAIN_FRAMES) {
         throw new Error('APDU response chain too long');
       }
-      response = await this.conn.transmit(Apdu.sendRemaining(response[response.length - 1]));
-      sw1 = response.length >= 2 ? response[response.length - 2] : 0;
+      const next = await this.conn.transmit(Apdu.sendRemaining(this.insSendRemaining));
+      const swNext = SmartCardProtocol.swOf(next);
+      if ((swNext >> 8) !== 0x61 && swNext !== Apdu.SW_OK) {
+        // CanoKey: 6985 = no more data, 6982 = OATH applet locked —— 数据已读完。
+        // 丢弃无数据的探测响应，以上一轮 SW 作为最终状态（对齐 canokey-manager 的 break 语义）
+        response = new Uint8Array([sw >> 8, sw & 0xFF]);
+        break;
+      }
+      response = next;
     }
     buf = ApduUtils.concat(buf, response);
     if (buf.length < 2) {
@@ -222,7 +262,7 @@ export class SmartCardProtocol {
       response = await this.sendApdu(0x00, 0xA4, 0x04, 0x00, aid, 0);
       return response;
     } catch (e) {
-      const msg = (e as Error).message;
+      const msg = errorMessage(e);
       const isNotAvailable = Apdu.SW_APP_NOT_AVAILABLE.some((sw) => msg.includes('0x' + sw.toString(16)));
       if (isNotAvailable) {
         throw new Error('Application not available');

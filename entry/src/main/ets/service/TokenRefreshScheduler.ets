@@ -5,7 +5,7 @@
 import { TokenStore } from '../viewmodel/TokenStore';
 import { AppState } from '../viewmodel/AppState';
 import { OathSessionManager } from './OathSessionManager';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { Log, errorMessage } from '../common/Log';
 
 export class TokenRefreshScheduler {
   private static instance: TokenRefreshScheduler | undefined = undefined;
@@ -63,7 +63,7 @@ export class TokenRefreshScheduler {
     if (mode === 'usb' && status === 'connected') {
       OathSessionManager.getInstance().refreshCurrent((msg: string) => {
       }).catch((e: Object) => {
-        hilog.error(0x0000, 'OathKeeper', 'USB heartbeat refresh failed: %{public}s', (e as Error).message);
+        Log.error('USB heartbeat refresh failed: %{public}s', errorMessage(e));
         const handler = TokenRefreshScheduler.lostHandler;
         if (handler !== undefined && AppStorage.get<string>(AppState.KEY_STATUS) === 'connected') {
           handler('读取令牌失败，卡片可能已断开');

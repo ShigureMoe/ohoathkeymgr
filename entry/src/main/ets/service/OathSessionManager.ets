@@ -3,8 +3,8 @@
  * 统一入口：所有与卡片交互的功能都经本类 withSession（内部委托 CardChannel），
  * 业务层不区分 NFC/USB——连接建立/断开由 ConnectionManager 负责并注入 channel。
  */
-import { hilog } from '@kit.PerformanceAnalysisKit';
 import { OathSession } from '../protocol/OathProtocol';
+import { Log, errorMessage } from '../common/Log';
 import { CredentialData, CredentialInfo, OathName, OtpType } from '../model/Credential';
 import { TokenItemState } from '../model/UiState';
 import { AppState, UiDialogBridge } from '../viewmodel/AppState';
@@ -24,12 +24,6 @@ export class PutResult {
 export class AddOutcomeResult {
   added: number = 0;
   conflicts: Array<string> = [];
-}
-
-/** NFC 日志常量 */
-export class NfcLog {
-  static readonly DOMAIN = 0x0000;
-  static readonly TAG = 'OathKeeper';
 }
 
 export class OathSessionManager {
@@ -175,8 +169,8 @@ export class OathSessionManager {
         await this.refreshAll(session);
       }, toast);
     } catch (e) {
-      hilog.error(NfcLog.DOMAIN, NfcLog.TAG, 'NFC idle tap failed: %{public}s', (e as Error).message);
-      toast((e as Error).message);
+      Log.error('NFC idle tap failed: %{public}s', errorMessage(e));
+      toast(errorMessage(e));
     }
   }
 
@@ -228,7 +222,7 @@ export class OathSessionManager {
           result.added += 1;
         }
       } catch (e) {
-        toast((e as Error).message);
+        toast(errorMessage(e));
       }
     }
     return result;
@@ -242,7 +236,7 @@ export class OathSessionManager {
         await this.putCredentialForce(cred, toast);
         ok += 1;
       } catch (e) {
-        toast((e as Error).message);
+        toast(errorMessage(e));
       }
     }
     return ok;

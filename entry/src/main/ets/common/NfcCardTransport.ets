@@ -9,6 +9,8 @@ import { tag } from '@kit.ConnectivityKit';
 import { bundleManager } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { CardTransport } from './ApduUtils';
+import { CardIdentity } from './CardVendor';
+import { errorMessage } from './Log';
 
 /** 延迟工具（毫秒） */
 function delay(ms: number): Promise<void> {
@@ -114,7 +116,7 @@ export class NfcCardTransport implements CardTransport {
         await delay(60);
         return;
       } catch (e) {
-        lastError = (e as Error).message;
+        lastError = errorMessage(e);
       }
     }
     throw new Error('NFC connect failed: ' + lastError);
@@ -142,7 +144,7 @@ export class NfcCardTransport implements CardTransport {
         }
         return out;
       } catch (e) {
-        lastError = (e as Error).message;
+        lastError = errorMessage(e);
       }
     }
     throw new Error('NFC transmit failed: ' + lastError);
@@ -155,5 +157,23 @@ export class NfcCardTransport implements CardTransport {
       // 忽略重置异常
     }
     return Promise.resolve();
+  }
+
+  /** 设备身份：返回 ATS 历史字节（CanoKey 为 Type 4A 标签；不可读时留空），厂商识别由 CardDetector 完成 */
+  getIdentity(): CardIdentity {
+    let hist: Uint8Array | undefined = undefined;
+    try {
+      const raw = this.isoDep.getHistoricalBytes();
+      if (raw !== undefined && raw !== null && raw.length > 0) {
+        hist = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) {
+          hist[i] = raw[i];
+        }
+      }
+    } catch (e) {
+      // 历史字节不可用（如 NfcB 标签）时留空
+    }
+    const identity: CardIdentity = { historicalBytes: hist };
+    return identity;
   }
 }

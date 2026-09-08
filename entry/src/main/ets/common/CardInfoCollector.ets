@@ -4,7 +4,7 @@
  *  2. SELECT MANAGEMENT → INS_READ_CONFIG 分页读取 DeviceInfo TLV（逆向自 yubikit/management.py）
  *  3. 组装与 ykman info / ykman oath info 对应字段的 JSON 对象
  */
-import { CardTransport, SmartCardProtocol, ApduUtils, Tlv, Aids } from './ApduUtils';
+import { Apdu, CardTransport, SmartCardProtocol, ApduUtils, Tlv, Aids } from './ApduUtils';
 import { CardInfoResult, YkmanInfoJson, OathInfoJson } from '../model/DeviceInfoModel';
 
 /** OATH SELECT 响应 TLV tag（逆向自 oath.py） */
@@ -208,7 +208,8 @@ export class CardInfoCollector {
    * 在给定传输上收集 ykman info + ykman oath info
    */
   static async collect(conn: CardTransport, transportName: string): Promise<CardInfoResult> {
-    const protocol = new SmartCardProtocol(conn);
+    // OATH 应用的响应链续传指令为 SEND_REMAINING(0xA5)
+    const protocol = new SmartCardProtocol(conn, Apdu.INS_SEND_REMAINING);
 
     // ---- OATH 应用 ----
     const oathSelect = await protocol.select(Aids.OATH);
@@ -223,9 +224,11 @@ export class CardInfoCollector {
     };
 
     // ---- Management 应用（不可用则降级为 unknown）----
+    // Management 的响应链续传用标准 GET RESPONSE(0xC0)（对标 yubikit SmartCardProtocol 默认值）
+    const mgmtProtocol = new SmartCardProtocol(conn);
     const state = new InfoStateHolder();
     try {
-      const mgmtSelect = await protocol.select(Aids.MANAGEMENT);
+      const mgmtSelect = await mgmtProtocol.select(Aids.MANAGEMENT);
       // 管理应用 SELECT 响应为 ASCII 固件版本字符串（逆向自 _ManagementSmartCardBackend）
       const versionFromSelect = parseVersionString(ApduUtils.utf8Decode(mgmtSelect));
       if (versionFromSelect !== null) {
@@ -237,7 +240,7 @@ export class CardInfoCollector {
       let page = 0;
       while (moreData > 0) {
         moreData -= 1;
-        const encoded = await protocol.sendApdu(0x00, INS_READ_CONFIG, page, 0x00, new Uint8Array(0), 0);
+        const encoded = await mgmtProtocol.sendApdu(0x00, INS_READ_CONFIG, page, 0x00, new Uint8Array(0), 0);
         if (encoded.length < 1) {
           break;
         }

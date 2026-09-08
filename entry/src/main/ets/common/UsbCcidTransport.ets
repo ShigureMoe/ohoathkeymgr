@@ -6,13 +6,10 @@
  *  - 本文件仅负责：USB 枚举、权限、pipe 管理、bulk 收发、超时 Abort 恢复
  */
 import { usbManager } from '@kit.BasicServicesKit';
-import { BusinessError } from '@kit.BasicServicesKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { Log, errorMessage } from './Log';
 import { CardTransport } from './ApduUtils';
+import { CardIdentity } from './CardVendor';
 import { CcidProtocol, ByteStream } from './CcidProtocol';
-
-const LOG_DOMAIN = 0x0000;
-const LOG_TAG = 'OathKeeper';
 
 /** 供测试页展示的 USB 安全卡片（含 CCID 接口的设备） */
 export interface UsbCardDevice {
@@ -38,10 +35,10 @@ export class UsbDeviceLister {
     try {
       devices = usbManager.getDevices();
     } catch (e) {
-      hilog.error(LOG_DOMAIN, LOG_TAG, 'USB_ENUM getDevices error: %{public}s', (e as BusinessError).message);
+      Log.error('USB_ENUM getDevices error: %{public}s', errorMessage(e));
       return out;
     }
-    hilog.info(LOG_DOMAIN, LOG_TAG, 'USB_ENUM total devices: %{public}d', devices.length);
+    Log.info('USB_ENUM total devices: %{public}d', devices.length);
     for (const dev of devices) {
       let ifaceDesc = '';
       if (dev.configs === undefined || dev.configs.length === 0) {
@@ -56,7 +53,7 @@ export class UsbDeviceLister {
         ifaceDesc = parts.join(',');
       }
       // hilog 不支持 %x 格式，VID/PID 用字符串拼接（%{public}s）打印
-      hilog.info(LOG_DOMAIN, LOG_TAG, 'USB_ENUM dev: name=%{public}s vid=0x%{public}s pid=0x%{public}s ifaces=[%{public}s]',
+      Log.info('USB_ENUM dev: name=%{public}s vid=0x%{public}s pid=0x%{public}s ifaces=[%{public}s]',
         dev.name, dev.vendorId.toString(16), dev.productId.toString(16), ifaceDesc);
       if (dev.configs !== undefined) {
         for (const cfg of dev.configs) {
@@ -68,7 +65,7 @@ export class UsbDeviceLister {
         }
       }
     }
-    hilog.info(LOG_DOMAIN, LOG_TAG, 'USB_ENUM ccid devices found: %{public}d', out.length);
+    Log.info('USB_ENUM ccid devices found: %{public}d', out.length);
     return out;
   }
 
@@ -106,7 +103,7 @@ class UsbByteStream implements ByteStream {
       return usbManager.bulkTransfer(this.pipe, this.outEp, data, BULK_TIMEOUT_MS);
     } catch (e) {
       this.onTimeout();
-      throw new Error('USB bulk write error: ' + (e as BusinessError).message);
+      throw new Error('USB bulk write error: ' + errorMessage(e));
     }
   }
 
@@ -115,7 +112,7 @@ class UsbByteStream implements ByteStream {
       return await usbManager.bulkTransfer(this.pipe, this.inEp, buf, BULK_TIMEOUT_MS);
     } catch (e) {
       this.onTimeout();
-      throw new Error('USB bulk read error: ' + (e as BusinessError).message);
+      throw new Error('USB bulk read error: ' + errorMessage(e));
     }
   }
 }
@@ -126,12 +123,16 @@ export class UsbCcidTransport implements CardTransport {
   private iface: usbManager.USBInterface;
   private protocol: CcidProtocol;
   private closed: boolean = false;
+  private readonly vendorId: number;
+  private readonly productId: number;
 
   private constructor(pipe: usbManager.USBDevicePipe, iface: usbManager.USBInterface,
-    protocol: CcidProtocol) {
+    protocol: CcidProtocol, vendorId: number, productId: number) {
     this.pipe = pipe;
     this.iface = iface;
     this.protocol = protocol;
+    this.vendorId = vendorId;
+    this.productId = productId;
   }
 
   /** 打开并初始化：申请权限 → open → claim → 设置配置/接口 → 找端点 → 上电（失败释放资源） */
@@ -159,7 +160,7 @@ export class UsbCcidTransport implements CardTransport {
     try {
       pipe = usbManager.connectDevice(card.device);
     } catch (e) {
-      throw new Error('USB connectDevice error: ' + (e as BusinessError).message);
+      throw new Error('USB connectDevice error: ' + errorMessage(e));
     }
     if (pipe === undefined || pipe === null) {
       throw new Error('USB connectDevice failed');
@@ -240,7 +241,15 @@ export class UsbCcidTransport implements CardTransport {
       throw (e as Error);
     }
 
-    return new UsbCcidTransport(pipe, card.iface, protocol);
+    return new UsbCcidTransport(pipe, card.iface, protocol, card.device.vendorId, card.device.productId);
+  }
+
+  getIdentity(): CardIdentity {
+    const identity: CardIdentity = {
+      usbVendorId: this.vendorId,
+      usbProductId: this.productId
+    };
+    return identity;
   }
 
   transmit(apdu: Uint8Array): Promise<Uint8Array> {

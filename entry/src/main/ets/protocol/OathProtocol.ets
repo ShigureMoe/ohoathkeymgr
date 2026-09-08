@@ -6,7 +6,9 @@
  */
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { util } from '@kit.ArkTS';
-import { Aids, ApduUtils, CardTransport, SmartCardProtocol, Tlv } from '../common/ApduUtils';
+import { Aids, Apdu, ApduUtils, CardTransport, SmartCardProtocol, Tlv } from '../common/ApduUtils';
+import { CardDetector, CardVendor } from '../common/CardVendor';
+import { errorMessage } from '../common/Log';
 import {
   CodeInfo, CredentialData, CredentialInfo, HashAlgorithm, OathName, OtpType
 } from '../model/Credential';
@@ -86,8 +88,46 @@ export class OathSession {
 
   /** SELECT OATH 应用并解析版本/lock 状态 */
   static async open(transport: CardTransport): Promise<OathSession> {
-    const protocol = new SmartCardProtocol(transport);
+    // OATH 应用的响应链续传指令为 SEND_REMAINING(0xA5)，不支持标准 GET RESPONSE(0xC0)；
+    // CanoKey 固件 <3.0.1 不支持 61xx 响应链，需启用"成功后继续读"兼容
+    const readOnSuccess = await OathSession.needCanoKeyReadOnSuccess(transport);
+    const protocol = new SmartCardProtocol(transport, Apdu.INS_SEND_REMAINING, readOnSuccess);
     return OathSession.openWithProtocol(protocol);
+  }
+
+  /**
+   * 检测是否为不支持 61xx 响应链的 CanoKey 老固件（逆向自 canokey-manager：
+   * is_canokey + CanoKeyAdminSession.read_version + FEATURE_MATRIX）。
+   * 第一步按设备身份识别厂商（CardDetector：USB VID/PID=0x20A0:0x42D4，NFC 历史字节含
+   * "CanoKey"），非 CanoKey 直接返回，不对 YubiKey 等其他设备发送 admin 探测指令；
+   * 第二步 SELECT admin applet（AID F000000000，全固件存在且读版本无需 PIN）读
+   * ASCII 固件版本，OATH_RESPONSE_CHAINING_FIX 自固件 3.0.1 起支持，低于则返回 true。
+   */
+  private static async needCanoKeyReadOnSuccess(transport: CardTransport): Promise<boolean> {
+    if (CardDetector.detect(transport.getIdentity()) !== CardVendor.CANOKEY) {
+      return false;
+    }
+    const probe = new SmartCardProtocol(transport);
+    try {
+      await probe.select(new Uint8Array([0xF0, 0x00, 0x00, 0x00, 0x00]));
+      // INS_READ_VERSION=0x31：返回 ASCII 固件版本串（如 "3.0.1"，可带 v 前缀/后缀）
+      const raw = await probe.sendApdu(0x00, 0x31, 0x00, 0x00, new Uint8Array(0), 0x20);
+      const text = ApduUtils.utf8Decode(raw).trim();
+      const match = /^v?(\d+)\.(\d+)(?:\.(\d+))?/.exec(text);
+      if (match === null) {
+        return false;
+      }
+      const major = parseInt(match[1]);
+      const minor = parseInt(match[2]);
+      const patch = match[3] === undefined ? 0 : parseInt(match[3]);
+      if (Number.isNaN(major) || Number.isNaN(minor) || Number.isNaN(patch)) {
+        return false;
+      }
+      return major < 3 || (major === 3 && minor === 0 && patch < 1);
+    } catch (e) {
+      // admin AID SELECT 失败（非 CanoKey）或读取异常：按标准 61xx 响应链处理
+      return false;
+    }
   }
 
   private static async openWithProtocol(protocol: SmartCardProtocol): Promise<OathSession> {
@@ -95,7 +135,7 @@ export class OathSession {
     try {
       response = await protocol.select(Aids.OATH);
     } catch (e) {
-      throw new Error('OATH 应用不可用：' + (e as Error).message);
+      throw new Error('OATH 应用不可用：' + errorMessage(e));
     }
     const map = Tlv.parseDict(response);
     const versionData = map.get(OathConst.TAG_VERSION);

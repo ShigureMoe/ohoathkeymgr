@@ -6,14 +6,11 @@
  */
 import { bundleManager } from '@kit.AbilityKit';
 import { tag } from '@kit.ConnectivityKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppContextHolder } from '../common/AppContextHolder';
+import { Log, errorMessage } from '../common/Log';
 import { NfcListener, NfcCardTransport } from '../common/NfcCardTransport';
 import { OathSession } from '../protocol/OathProtocol';
 import { AppState } from '../viewmodel/AppState';
-
-const LOG_DOMAIN = 0x0000;
-const LOG_TAG = 'OathKeeper';
 
 export class NfcSessionRunner {
   private static busy: boolean = false;
@@ -120,14 +117,14 @@ export class NfcSessionRunner {
       return;
     }
     NfcSessionRunner.busy = true;
-    hilog.info(LOG_DOMAIN, LOG_TAG, 'NFC idle tap detected');
+    Log.info('NFC idle tap detected');
     const onTap = NfcSessionRunner.idleOnTap;
     try {
       if (onTap !== undefined) {
         await onTap(tagInfo);
       }
     } catch (e) {
-      hilog.error(LOG_DOMAIN, LOG_TAG, 'NFC idle tap error: %{public}s', (e as Error).message);
+      Log.error('NFC idle tap error: %{public}s', errorMessage(e));
     } finally {
       NfcSessionRunner.busy = false;
       // 延时重启监听：卡片若仍在场，此处不会立即触发；用户移卡后再放上会重新发现
@@ -157,7 +154,7 @@ export class NfcSessionRunner {
       const result = await work(session);
       resolve(result);
     } catch (e) {
-      hilog.error(LOG_DOMAIN, LOG_TAG, 'NFC op session failed: %{public}s', (e as Error).message);
+      Log.error('NFC op session failed: %{public}s', errorMessage(e));
       reject(e as Error);
     } finally {
       if (transport !== undefined) {

@@ -1,13 +1,12 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { AppContextHolder } from '../common/AppContextHolder';
+import { Log } from '../common/Log';
 import { NfcListener } from '../common/NfcCardTransport';
 import { AppPreferences } from '../storage/AppPreferences';
 import { ConnectionManager } from '../service/ConnectionManager';
 import { TokenRefreshScheduler } from '../service/TokenRefreshScheduler';
 import { ThemeManager } from '../service/ThemeManager';
-const DOMAIN = 0x0000;
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -16,21 +15,21 @@ export default class EntryAbility extends UIAbility {
     ConnectionManager.getInstance().init(this.context);
     ThemeManager.apply(this.context);
     TokenRefreshScheduler.getInstance().start();
-    hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Ability onCreate');
+    Log.info('%{public}s', 'Ability onCreate');
   }
 
   onDestroy(): void {
     TokenRefreshScheduler.getInstance().stop();
-    hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Ability onDestroy');
+    Log.info('%{public}s', 'Ability onDestroy');
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
-        hilog.error(DOMAIN, 'OathKeeper', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
+        Log.error('Failed to load the content. Cause: %{public}s', JSON.stringify(err));
         return;
       }
-      hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Succeeded in loading the content.');
+      Log.info('%{public}s', 'Succeeded in loading the content.');
     });
   }
 
@@ -40,7 +39,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   onForeground(): void {
-    hilog.info(DOMAIN, 'OathKeeper', '%{public}s', 'Ability onForeground');
+    Log.info('%{public}s', 'Ability onForeground');
     // 恢复 NFC 待卡监听（onBackground 中已退订，系统要求退出前台即 tag.off）
     ConnectionManager.getInstance().resumeNfcIdle();
   }

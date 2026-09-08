@@ -6,7 +6,7 @@
  *   - 切换/断开：清空会话密码、令牌缓存、定时器
  */
 import { common } from '@kit.AbilityKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { Log, errorMessage } from '../common/Log';
 import { ConnMode, ConnStatus, NfcAvailability } from '../model/UiState';
 import { AppState } from '../viewmodel/AppState';
 import { TokenStore } from '../viewmodel/TokenStore';
@@ -155,13 +155,13 @@ export class ConnectionManager {
       try {
         await OathSessionManager.getInstance().refreshCurrent(toast);
       } catch (e) {
-        hilog.error(0x0000, 'OathKeeper', 'USB first refresh failed: %{public}s', (e as Error).message);
-        this.handleUsbLost('读取令牌失败：' + (e as Error).message);
-        throw new Error('读取令牌失败');
+        Log.error('USB first refresh failed: %{public}s', errorMessage(e));
+        this.handleUsbLost('读取令牌失败：' + errorMessage(e));
+        throw new Error('读取令牌失败：' + errorMessage(e));
       }
       TokenRefreshScheduler.getInstance().start();
     } catch (e) {
-      hilog.error(0x0000, 'OathKeeper', 'USB connectUsb failed: %{public}s', (e as Error).message);
+      Log.error('USB connectUsb failed: %{public}s', errorMessage(e));
       if (this.status === ConnStatus.CONNECTED) {
         throw (e as Error);
       }
