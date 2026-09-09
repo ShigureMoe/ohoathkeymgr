@@ -140,7 +140,8 @@ export class ConnectionManager {
       }
       const session = await OathSession.open(transport);
       hasKey = session.getHasKey();
-      const ok = await OathSessionManager.getInstance().authenticate(session, toast);
+      // USB 时序：authenticate 先于 setChannel，此阶段 this.channel 不可用，须显式传 serial
+      const ok = await OathSessionManager.getInstance().authenticate(session, toast, serial);
       if (!ok) {
         try {
           await transport.close();

@@ -2,6 +2,7 @@
  * 设置页（M5-6 / S10/S12）：
  *  - 暗黑模式三选一（跟随系统/深色/亮色，持久化）
  *  - 重置安全卡片（输入 RESETTHEKEY 确认）
+ *  - 已保存的会话密码（session-password-persist：Navigation 跳转管理页，仅展示/删除）
  *  - 关于应用（作者/项目地址/问题反馈/License/兼容性测试，前四项外链跳转）
  */
 import { common, OpenLinkOptions } from '@kit.AbilityKit';
@@ -21,6 +22,8 @@ export struct SettingsPage {
   toast: (msg: string) => void = (msg: string) => {
   };
   @StorageProp('connMode') connMode: string = 'none';
+  // Navigation 路由栈（与 Index 的 @Provide('navPathStack') 配对）：跳转已保存会话密码管理页
+  @Consume('navPathStack') navPathStack: NavPathStack;
   @State themeValue: string = 'system';
   @State resetDialogVisible: boolean = false;
   @State resetInput: string = '';
@@ -78,6 +81,23 @@ export struct SettingsPage {
           .onClick(() => {
             this.resetInput = '';
             this.resetDialogVisible = true;
+          })
+
+          Row() {
+            Text('已保存的会话密码')
+              .fontSize(15)
+            Blank()
+            Text('>')
+              .fontSize(15)
+              .fontColor($r('app.color.text_hint'))
+          }
+          .width('92%')
+          .padding(16)
+          .backgroundColor($r('app.color.surface_card'))
+          .borderRadius(10)
+          .onClick(() => {
+            // 管理本地持久化数据，与连接状态无关（不随连接置灰）
+            this.navPathStack.pushPathByName('savedPasswords', null);
           })
 
           Row() {

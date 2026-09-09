@@ -2,6 +2,11 @@
  * OATH 会话编排（REQ M4-2 验证流程 S3 / S4~S10 凭据操作入口）
  * 统一入口：所有与卡片交互的功能都经本类 withSession（内部委托 CardChannel），
  * 业务层不区分 NFC/USB——连接建立/断开由 ConnectionManager 负责并注入 channel。
+ * 会话密码持久化（session-password-persist v2）：authenticate 按"当前配置非空密码 >
+ * 已保存密码（按序列号） > 弹窗输入"优先级验证；条目仅由用户在管理页手动添加，
+ * 验证成功路径仅做变动同步（sync：条目已存在且密码不同才覆盖，未登记不创建）；
+ * 已保存密码失效不删条目，直接回落弹窗（新密码成功后由 sync 自愈）；
+ * 修改密码联动 sync（改为空密码删条目）；重置卡片联动删除条目。
  */
 import { OathSession } from '../protocol/OathProtocol';
 import { Log, errorMessage } from '../common/Log';
@@ -11,6 +16,7 @@ import { AppState, UiDialogBridge } from '../viewmodel/AppState';
 import { DeviceInfoStore } from '../viewmodel/DeviceInfoStore';
 import { TokenStore } from '../viewmodel/TokenStore';
 import { SessionPasswordStore } from '../security/SessionPasswordStore';
+import { SavedPasswordStore } from '../security/SavedPasswordStore';
 import { ParseOutcome } from '../utils/OtpauthParser';
 import { CardChannel, NfcCardChannel } from './CardChannel';
 import { tag } from '@kit.ConnectivityKit';
@@ -78,28 +84,49 @@ export class OathSessionManager {
   }
 
   /**
-   * S3 验证：手动会话密码 → 弹窗输入；失败仅 Toast
+   * S3 验证：手动会话密码 → 弹窗输入；失败仅 Toast。
+   * serial：USB 连接时序中 authenticate 先于 setChannel，须由 connectUsb 显式传参；
+   * <0 时回退当前通道序列号（NFC 的 verifySerial 先于 authenticate 执行，已是当前碰卡序列号）。
    */
-  async authenticate(session: OathSession, toast: (msg: string) => void): Promise<boolean> {
+  async authenticate(session: OathSession, toast: (msg: string) => void, serial: number = -1): Promise<boolean> {
     if (!session.isLocked()) {
       this.hasCardKey = session.getHasKey();
       return true;
     }
     this.hasCardKey = true;
+    const sn = serial >= 0 ? serial : (this.channel?.getSerial() ?? -1);
     const manual = SessionPasswordStore.get();
     if (manual !== undefined && manual.length > 0) {
       try {
         await this.tryValidate(session, manual);
+        if (sn >= 0) {
+          // 验证成功：变动同步（条目已存在且密码不同才覆盖，未登记不创建；fire-and-forget）
+          SavedPasswordStore.sync(sn, manual);
+        }
         return true;
       } catch (e) {
         toast('密码错误，解锁失败');
         return false;
       }
     }
-    if (manual !== undefined && manual.length === 0) {
-      toast('会话密码为空且卡片已设置密码');
-      return false;
+    // manual 未配置或显式空串：按序列号自动读取已保存密码（FR-006；替换旧空串 Toast 拒绝）
+    if (sn >= 0) {
+      const saved = await SavedPasswordStore.get(sn);
+      if (saved !== undefined) {
+        try {
+          await this.tryValidate(session, saved);
+          return true; // 已保存密码验证成功：不回写 SessionPasswordStore（保持配置态与记忆正交）
+        } catch (e) {
+          if (!errorMessage(e).includes('密码错误')) {
+            // 通信等非密码错误类异常：不动条目，向上抛出按连接错误处理（FR-008）
+            throw e as Error;
+          }
+          // 已保存密码失效（卡片密码已在别处被修改）：保留条目不删除，直接回落弹窗输入
+          //（输入新密码验证成功后经弹窗分支 sync 自动覆盖，条目自愈；plan.md D5-v2）
+        }
+      }
     }
+    // 回落：无可用已保存密码，弹窗输入
     const input = await UiDialogBridge.requestPassword('输入安全密码', false,
       '卡片已设置安全密码，请输入后继续');
     if (input === null) {
@@ -109,6 +136,10 @@ export class OathSessionManager {
     try {
       await this.tryValidate(session, input);
       SessionPasswordStore.set(input);
+      if (sn >= 0) {
+        // 弹窗输入验证成功：变动同步（失效回落场景在此自愈条目，未登记不创建；fire-and-forget）
+        SavedPasswordStore.sync(sn, input);
+      }
       return true;
     } catch (e) {
       toast('密码错误');
@@ -308,6 +339,16 @@ export class OathSessionManager {
         this.hasCardKey = true;
       }
       SessionPasswordStore.set(newPassword);
+      // 持久化联动（FR-010）：新密码非空变动同步（已存在条目才覆盖，未登记不创建）；
+      // 为空删除条目（卡片已无密码，条目失去意义）；serial<0 跳过
+      const channelSerial = this.channel?.getSerial() ?? -1;
+      if (channelSerial >= 0) {
+        if (newPassword.length > 0) {
+          SavedPasswordStore.sync(channelSerial, newPassword);
+        } else {
+          SavedPasswordStore.remove(channelSerial);
+        }
+      }
       await this.refreshAll(session);
     }, toast);
   }
@@ -318,6 +359,11 @@ export class OathSessionManager {
       await session.reset();
       this.hasCardKey = false;
       SessionPasswordStore.clear();
+      // 重置后卡片不再有密码：删除对应序列号的记忆条目（FR-010；serial<0 跳过）
+      const channelSerial = this.channel?.getSerial() ?? -1;
+      if (channelSerial >= 0) {
+        SavedPasswordStore.remove(channelSerial);
+      }
       TokenStore.getInstance().clear();
       AppState.setCredentialCount(0);
     }, toast);
