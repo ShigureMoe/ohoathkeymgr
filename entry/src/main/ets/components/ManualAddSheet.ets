@@ -7,6 +7,7 @@ import { Base32 } from '../utils/Base32';
 import { CredentialData, HashAlgorithm, OtpType } from '../model/Credential';
 import { DeviceInfoStore } from '../viewmodel/DeviceInfoStore';
 import { OathSessionManager } from '../service/OathSessionManager';
+import { ResUtil } from '../common/ResUtil';
 import { promptAction } from '@kit.ArkUI';
 
 @Component
@@ -31,11 +32,11 @@ export struct ManualAddSheet {
         Scroll() {
           Column({ space: 10 }) {
             Row() {
-              Text('添加通用令牌')
+              Text($r('app.string.add_manual_title'))
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
               Blank()
-              Text('关闭')
+              Text($r('app.string.common_close'))
                 .fontSize(13)
                 .fontColor($r('app.color.text_secondary'))
                 .onClick(() => {
@@ -44,20 +45,20 @@ export struct ManualAddSheet {
             }
             .width('100%')
 
-            TextInput({ placeholder: 'Issuer（如 GitHub）', text: this.issuer })
+            TextInput({ placeholder: $r('app.string.add_issuer_hint'), text: this.issuer })
               .onChange((v: string) => {
                 this.issuer = v;
               })
-            TextInput({ placeholder: 'Account（如 user@example.com）', text: this.account })
+            TextInput({ placeholder: $r('app.string.add_account_hint'), text: this.account })
               .onChange((v: string) => {
                 this.account = v;
               })
-            TextInput({ placeholder: 'Secret（Base32，可省略等号）', text: this.secret })
+            TextInput({ placeholder: $r('app.string.add_secret_hint'), text: this.secret })
               .onChange((v: string) => {
                 this.secret = v;
               })
 
-            this.labelRow('类型')
+            this.labelRow($r('app.string.add_type'))
             Row({ space: 24 }) {
               Radio({ value: 'totp', group: 'type' })
                 .checked(this.totpSelected)
@@ -80,7 +81,7 @@ export struct ManualAddSheet {
             }
             .width('100%')
 
-            this.labelRow('算法')
+            this.labelRow($r('app.string.add_algo'))
             Row({ space: 18 }) {
               ForEach([0, 1, 2], (idx: number) => {
                 Row({ space: 4 }) {
@@ -98,7 +99,7 @@ export struct ManualAddSheet {
             }
             .width('100%')
 
-            this.labelRow('位数')
+            this.labelRow($r('app.string.add_digits'))
             Row({ space: 18 }) {
               ForEach([6, 7, 8], (digits: number) => {
                 Row({ space: 4 }) {
@@ -117,7 +118,7 @@ export struct ManualAddSheet {
             .width('100%')
 
             if (this.totpSelected) {
-              this.labelRow('周期（秒）')
+              this.labelRow($r('app.string.add_period'))
               Row({ space: 18 }) {
                 ForEach([15, 30, 60], (period: number) => {
                   Row({ space: 4 }) {
@@ -135,8 +136,8 @@ export struct ManualAddSheet {
               }
               .width('100%')
             } else {
-              this.labelRow('初始计数器')
-              TextInput({ placeholder: '初始计数器（默认 0）', text: this.hotpCounter })
+              this.labelRow($r('app.string.add_counter'))
+              TextInput({ placeholder: $r('app.string.add_counter_hint'), text: this.hotpCounter })
                 .type(InputType.Number)
                 .onChange((v: string) => {
                   this.hotpCounter = v;
@@ -144,7 +145,7 @@ export struct ManualAddSheet {
             }
 
             Row() {
-              Text('需要触摸')
+              Text($r('app.string.add_require_touch'))
                 .fontSize(14)
               Blank()
               Toggle({ type: ToggleType.Switch, isOn: this.touchChecked })
@@ -155,13 +156,13 @@ export struct ManualAddSheet {
             }
             .width('100%')
             if (!DeviceInfoStore.supportsTouch()) {
-              Text('当前设备固件不支持触摸属性（需固件 ≥4.2.6）')
+              Text($r('app.string.add_touch_unsupported'))
                 .fontSize(11)
                 .fontColor($r('app.color.warning'))
                 .alignSelf(ItemAlign.Start)
             }
 
-            Button(this.busy ? '添加中…' : '添加')
+            Button(this.busy ? $r('app.string.add_busy') : $r('app.string.add_submit'))
               .width('100%')
               .height(44)
               .fontSize(15)
@@ -190,7 +191,7 @@ export struct ManualAddSheet {
   }
 
   @Builder
-  labelRow(label: string) {
+  labelRow(label: Resource) {
     Text(label)
       .fontSize(12)
       .fontColor($r('app.color.text_secondary'))
@@ -223,12 +224,12 @@ export struct ManualAddSheet {
       return;
     }
     if (this.account.length === 0) {
-      this.toast('请填写 Account');
+      this.toast(ResUtil.str($r('app.string.add_account_required')));
       return;
     }
     const secretBytes = Base32.tryDecode(this.secret);
     if (secretBytes === null) {
-      this.toast('Secret 不是有效的 Base32');
+      this.toast(ResUtil.str($r('app.string.add_secret_invalid')));
       return;
     }
     const cred = new CredentialData();
@@ -252,18 +253,18 @@ export struct ManualAddSheet {
       const result = await OathSessionManager.getInstance().putCredential(cred, this.toast);
       if (result.alreadyExists) {
         this.getUIContext().getPromptAction().showDialog({
-          title: '凭据已存在',
-          message: '已存在同名凭据（' + cred.getDisplayName() + '），是否覆盖？',
+          title: $r('app.string.add_exists_title'),
+          message: $r('app.string.add_exists_message', cred.getDisplayName()),
           buttons: [
-            { text: '取消', color: $r('app.color.text_secondary') },
-            { text: '覆盖', color: $r('app.color.danger') }
+            { text: $r('app.string.common_cancel'), color: $r('app.color.text_secondary') },
+            { text: $r('app.string.add_overwrite'), color: $r('app.color.danger') }
           ]
         }).then((res: promptAction.ShowDialogSuccessResponse) => {
           if (res.index !== 1) {
             return;
           }
           OathSessionManager.getInstance().putCredentialForce(cred, this.toast).then(() => {
-            this.toast('凭据已覆盖');
+            this.toast(ResUtil.str($r('app.string.add_overwritten')));
             this.visible = false;
           }).catch((err: Error) => {
             this.toast(err.message);
@@ -271,7 +272,7 @@ export struct ManualAddSheet {
         }).catch(() => {
         });
       } else {
-        this.toast('凭据已添加');
+        this.toast(ResUtil.str($r('app.string.add_done')));
         this.visible = false;
       }
     } catch (err) {

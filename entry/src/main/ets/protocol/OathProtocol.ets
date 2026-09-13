@@ -12,6 +12,8 @@ import { errorMessage } from '../common/Log';
 import {
   CodeInfo, CredentialData, CredentialInfo, HashAlgorithm, OathName, OtpType
 } from '../model/Credential';
+import { ResUtil } from '../common/ResUtil';
+import { PasswordValidationError } from '../common/OathErrors';
 
 /** OATH 指令与 TLV tag（逆向自 oath.py） */
 export class OathConst {
@@ -135,7 +137,7 @@ export class OathSession {
     try {
       response = await protocol.select(Aids.OATH);
     } catch (e) {
-      throw new Error('OATH 应用不可用：' + errorMessage(e));
+      throw new Error(ResUtil.strWithArgs($r('app.string.err_oath_unavailable'), errorMessage(e)));
     }
     const map = Tlv.parseDict(response);
     const versionData = map.get(OathConst.TAG_VERSION);
@@ -176,7 +178,7 @@ export class OathSession {
   async deriveKey(password: string): Promise<Uint8Array> {
     const salt = this.salt;
     if (salt === null) {
-      throw new Error('缺少卡片 salt');
+      throw new Error(ResUtil.str($r('app.string.err_missing_salt')));
     }
     const passBytes = OathSession.utf8Encode(password);
     const kdf = cryptoFramework.createKdf('PBKDF2|SHA1');
@@ -206,7 +208,9 @@ export class OathSession {
     const map = Tlv.parseDict(resp);
     const verification = map.get(OathConst.TAG_RESPONSE);
     if (verification === undefined || !ApduUtils.constantEquals(verification, await OathSession.hmacSha1(key, clientChallenge))) {
-      throw new Error('验证失败，密码错误');
+      // 判据重构（FR-007）：密码比对失败抛结构化 PasswordValidationError，
+      // 上层以 instanceof 识别（不再依赖消息文本子串匹配），消息资源化后双语言分流一致
+      throw new PasswordValidationError(ResUtil.str($r('app.string.err_validation_failed')));
     }
     this.challenge = null;
   }
@@ -278,7 +282,7 @@ export class OathSession {
     const map = Tlv.parseDict(resp);
     const truncated = map.get(OathConst.TAG_TRUNCATED);
     if (truncated === undefined || truncated.length < 5) {
-      throw new Error('CALCULATE 响应异常');
+      throw new Error(ResUtil.str($r('app.string.err_calculate_response')));
     }
     return OathSession.formatCode(truncated, otpType, period, timestampSec);
   }

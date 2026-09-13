@@ -13,6 +13,7 @@ import { AddFabMenu } from '../components/AddFabMenu';
 import { ManualAddSheet } from '../components/ManualAddSheet';
 import { AddByUriSheet } from '../components/AddByUriSheet';
 import { AppState } from '../viewmodel/AppState';
+import { ResUtil } from '../common/ResUtil';
 import { promptAction } from '@kit.ArkUI';
 
 @Component
@@ -28,11 +29,11 @@ export struct TokenListPage {
     Stack({ alignContent: Alignment.TopStart }) {
       if (this.store.items.length === 0) {
         Column({ space: 8 }) {
-          Text(this.emptyTitle())
+          Text(this.emptyTitleRes())
             .fontSize(15)
             .fontColor($r('app.color.text_secondary'))
           if (this.connMode === 'none') {
-            Text('点击右上角选择连接方式')
+            Text($r('app.string.token_empty_hint'))
               .fontSize(12)
               .fontColor($r('app.color.text_hint'))
           }
@@ -94,30 +95,30 @@ export struct TokenListPage {
     return cb;
   }
 
-  private emptyTitle(): string {
+  private emptyTitleRes(): Resource {
     if (this.connMode === 'nfc') {
-      return '碰卡以读取令牌';
+      return $r('app.string.token_empty_nfc');
     }
     if (this.connMode === 'usb') {
-      return '连接成功，暂无凭据';
+      return $r('app.string.token_empty_usb');
     }
-    return '请先选择连接方式';
+    return $r('app.string.token_empty_no_conn');
   }
 
   private confirmDelete(name: string): void {
     this.getUIContext().getPromptAction().showDialog({
-      title: '删除凭据',
-      message: '确定从安全卡片删除该凭据？',
+      title: $r('app.string.token_delete_title'),
+      message: $r('app.string.token_delete_message', name),
       buttons: [
-        { text: '取消', color: $r('app.color.text_secondary') },
-        { text: '删除', color: $r('app.color.danger') }
+        { text: $r('app.string.common_cancel'), color: $r('app.color.text_secondary') },
+        { text: $r('app.string.common_delete'), color: $r('app.color.danger') }
       ]
     }).then((res: promptAction.ShowDialogSuccessResponse) => {
       if (res.index !== 1) {
         return;
       }
       OathSessionManager.getInstance().deleteCredential(name, this.toast).then(() => {
-        this.toast('凭据已删除');
+        this.toast(ResUtil.str($r('app.string.token_deleted')));
       }).catch((err: Error) => {
         this.toast(err.message);
       });
@@ -135,13 +136,13 @@ export struct TokenListPage {
   private async scanAndImport(): Promise<void> {
     const hostContext = this.getUIContext().getHostContext();
     if (hostContext === undefined) {
-      this.toast('未获取到应用上下文');
+      this.toast(ResUtil.str($r('app.string.import_no_context')));
       return;
     }
     try {
       const raw = await ScanService.scan(hostContext);
       if (raw.length === 0) {
-        this.toast('未识别到二维码内容');
+        this.toast(ResUtil.str($r('app.string.import_scan_empty')));
         return;
       }
       const outcome = OtpauthParser.parseAny(raw);

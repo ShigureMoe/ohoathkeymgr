@@ -6,6 +6,7 @@
  */
 import { nfcController } from '@kit.ConnectivityKit';
 import { NfcAvailability } from '../model/UiState';
+import { ResUtil } from '../common/ResUtil';
 
 export class NfcSupport {
   /** 检测当前 NFC 可用性（全部异常兜底为最严格状态） */
@@ -37,30 +38,30 @@ export class NfcSupport {
     return open ? NfcAvailability.READY : NfcAvailability.SWITCH_OFF;
   }
 
-  /** 各状态对应的用户提示文案（弹窗/Toast 共用） */
+  /** 各状态对应的用户提示文案（弹窗/Toast 共用；资源化取串） */
   static messageFor(avail: NfcAvailability): string {
     if (avail === NfcAvailability.SWITCH_OFF) {
-      return '系统 NFC 开关未打开，请到系统设置开启后重试';
+      return ResUtil.str($r('app.string.nfc_switch_off'));
     }
     if (avail === NfcAvailability.UNSUPPORTED) {
-      return '当前设备不支持 NFC';
+      return ResUtil.str($r('app.string.nfc_unsupported'));
     }
     if (avail === NfcAvailability.HARDWARE_MISSING) {
-      return 'NFC 硬件不可用（模拟器环境无 NFC 芯片）';
+      return ResUtil.str($r('app.string.nfc_unavailable'));
     }
     return '';
   }
 
-  /** 弹窗内 NFC 项副标题 */
+  /** 弹窗内 NFC 项副标题（'NFC' 技术缩写不译） */
   static labelFor(avail: NfcAvailability): string {
     if (avail === NfcAvailability.SWITCH_OFF) {
-      return 'NFC（开关未开启）';
+      return ResUtil.str($r('app.string.nfc_label_switch_off'));
     }
     if (avail === NfcAvailability.UNSUPPORTED) {
-      return 'NFC（设备不支持）';
+      return ResUtil.str($r('app.string.nfc_label_unsupported'));
     }
     if (avail === NfcAvailability.HARDWARE_MISSING) {
-      return 'NFC（硬件不可用）';
+      return ResUtil.str($r('app.string.nfc_label_unavailable'));
     }
     return 'NFC';
   }

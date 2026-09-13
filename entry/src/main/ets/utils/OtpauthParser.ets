@@ -6,6 +6,7 @@
 import { util } from '@kit.ArkTS';
 import { Base32 } from './Base32';
 import { CredentialData, HashAlgorithm, OtpType } from '../model/Credential';
+import { ResUtil } from '../common/ResUtil';
 
 /** 解析结果类别（供 UI 分流：单条 vs 多条迁移） */
 export class ParseOutcome {
@@ -30,7 +31,7 @@ export class OtpauthParser {
       out.credentials.push(OtpauthParser.parseOtpauth(text));
       return out;
     }
-    throw new Error('不支持的二维码内容');
+    throw new Error(ResUtil.str($r('app.string.err_uri_unsupported')));
   }
 
   /** 解析单条 otpauth://（兼容不带前缀的输入） */
@@ -60,12 +61,12 @@ export class OtpauthParser {
       account = path.substring(colonIdx + 1);
     }
     if (account.length === 0) {
-      throw new Error('凭据名称缺失');
+      throw new Error(ResUtil.str($r('app.string.err_uri_missing_name')));
     }
 
     const secretStr = params.get('secret');
     if (secretStr === undefined || secretStr.length === 0) {
-      throw new Error('缺少 secret 参数');
+      throw new Error(ResUtil.str($r('app.string.err_uri_missing_secret')));
     }
     const secret = Base32.decode(secretStr);
 
@@ -110,10 +111,10 @@ export class OtpauthParser {
     const params = OtpauthParser.parseQuery(query);
     const data = params.get('data');
     if (data === undefined || data.length === 0) {
-      throw new Error('迁移数据缺失');
+      throw new Error(ResUtil.str($r('app.string.err_migration_missing')));
     }
     if (data.indexOf('%') >= 0) {
-      throw new Error('迁移数据需先 URL 解码');
+      throw new Error(ResUtil.str($r('app.string.err_migration_url_encoded')));
     }
     const bytes = OtpauthParser.base64Decode(data);
     return OtpauthParser.parseMigrationPayload(bytes);
@@ -140,7 +141,7 @@ export class OtpauthParser {
       }
     }
     if (creds.length === 0) {
-      throw new Error('迁移数据中无有效凭据');
+      throw new Error(ResUtil.str($r('app.string.err_migration_empty')));
     }
     return creds;
   }
@@ -289,13 +290,13 @@ export class ProtoReader {
       // 超出 number 安全范围，取低 32 位回退
       return result >>> 0;
     }
-    throw new Error('protobuf 读取越界');
+    throw new Error(ResUtil.str($r('app.string.err_proto_out_of_range')));
   }
 
   readBytes(): Uint8Array {
     const len = this.readVarint();
     if (this.offset + len > this.data.length) {
-      throw new Error('protobuf 长度越界');
+      throw new Error(ResUtil.str($r('app.string.err_proto_length_overflow')));
     }
     const out = this.data.subarray(this.offset, this.offset + len);
     this.offset += len;

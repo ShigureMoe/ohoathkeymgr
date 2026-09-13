@@ -11,6 +11,7 @@ import { Log, errorMessage } from '../common/Log';
 import { NfcListener, NfcCardTransport } from '../common/NfcCardTransport';
 import { OathSession } from '../protocol/OathProtocol';
 import { AppState } from '../viewmodel/AppState';
+import { ResUtil } from '../common/ResUtil';
 
 export class NfcSessionRunner {
   private static busy: boolean = false;
@@ -57,7 +58,7 @@ export class NfcSessionRunner {
     preSession?: (transport: NfcCardTransport) => Promise<void>): Promise<T> {
     return new Promise<T>((resolve: (value: T) => void, reject: (reason: Error) => void) => {
       if (NfcSessionRunner.busy) {
-        reject(new Error('正在进行其他 NFC 操作'));
+        reject(new Error(ResUtil.str($r('app.string.nfc_busy'))));
         return;
       }
       const savedIdle = NfcSessionRunner.idleOnTap;
@@ -72,7 +73,7 @@ export class NfcSessionRunner {
         AppState.setNfcPrompt(false);
         NfcSessionRunner.busy = false;
         NfcSessionRunner.pendingReject = undefined;
-        reject(new Error('NFC 监听启动失败，请确认 NFC 已开启'));
+        reject(new Error(ResUtil.str($r('app.string.nfc_listen_failed'))));
         return;
       }
     });
@@ -86,7 +87,7 @@ export class NfcSessionRunner {
     NfcSessionRunner.pendingReject = undefined;
     NfcSessionRunner.busy = false;
     if (reject !== undefined) {
-      reject(new Error('已取消'));
+      reject(new Error(ResUtil.str($r('app.string.operation_cancelled'))));
     }
   }
 

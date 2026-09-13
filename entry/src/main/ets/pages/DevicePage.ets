@@ -5,6 +5,7 @@
 import { CardInfoResult } from '../model/DeviceInfoModel';
 import { OathSessionManager } from '../service/OathSessionManager';
 import { AppState } from '../viewmodel/AppState';
+import { ResUtil } from '../common/ResUtil';
 
 @Component
 export struct DevicePage {
@@ -22,33 +23,33 @@ export struct DevicePage {
     Stack({ alignContent: Alignment.TopStart }) {
       Scroll() {
         Column({ space: 14 }) {
-          Text('设备信息')
+          Text($r('app.string.device_info_title'))
             .fontSize(16)
             .fontWeight(FontWeight.Bold)
             .alignSelf(ItemAlign.Start)
             .margin({ left: 20 })
 
           if (this.deviceInfo === undefined) {
-            Text('请先连接安全卡片')
+            Text($r('app.string.device_not_connected'))
               .fontSize(14)
               .fontColor($r('app.color.text_secondary'))
               .alignSelf(ItemAlign.Start)
               .margin({ left: 20, top: 12 })
           } else {
             Column({ space: 10 }) {
-              this.infoRow('设备类型', this.deviceInfo.ykmanInfo.deviceType)
-              this.infoRow('序列号', this.serialText())
-              this.infoRow('固件版本', this.deviceInfo.ykmanInfo.firmwareVersion)
-              this.infoRow('OATH 版本', this.deviceInfo.oathInfo.oathVersion)
-              this.infoRow('密码保护', this.pwdProtectionText())
-              this.infoRow('凭据数量', String(this.credentialCount))
+              this.infoRow($r('app.string.device_type'), this.deviceInfo.ykmanInfo.deviceType)
+              this.infoRow($r('app.string.device_serial'), this.serialText())
+              this.infoRow($r('app.string.device_firmware'), this.deviceInfo.ykmanInfo.firmwareVersion)
+              this.infoRow($r('app.string.device_oath_version'), this.deviceInfo.oathInfo.oathVersion)
+              this.infoRow($r('app.string.device_password_protection'), this.pwdProtectionText())
+              this.infoRow($r('app.string.device_account_count'), String(this.credentialCount))
             }
             .width('100%')
             .padding({ left: 20, right: 20, top: 4 })
           }
 
           Row() {
-            Text('修改安全密码')
+            Text($r('app.string.device_change_password'))
               .fontSize(15)
               .fontColor($r('app.color.accent'))
             Blank()
@@ -67,20 +68,20 @@ export struct DevicePage {
 
           if (this.showChangePass) {
             Column({ space: 10 }) {
-              Text(this.changePassHint())
+              Text(this.changePassHintRes())
                 .fontSize(12)
                 .fontColor($r('app.color.text_secondary'))
-              TextInput({ placeholder: '新密码（留空并确认 = 移除密码）', text: this.newPwd })
+              TextInput({ placeholder: $r('app.string.device_new_password_hint'), text: this.newPwd })
                 .type(InputType.Password)
                 .onChange((v: string) => {
                   this.newPwd = v;
                 })
-              TextInput({ placeholder: '确认新密码', text: this.confirmPwd })
+              TextInput({ placeholder: $r('app.string.device_confirm_password'), text: this.confirmPwd })
                 .type(InputType.Password)
                 .onChange((v: string) => {
                   this.confirmPwd = v;
                 })
-              Button(this.busy ? '提交中…' : '提交')
+              Button(this.busy ? $r('app.string.device_busy') : $r('app.string.device_submit'))
                 .width('100%')
                 .height(40)
                 .fontSize(14)
@@ -109,7 +110,7 @@ export struct DevicePage {
   }
 
   @Builder
-  infoRow(label: string, value: string) {
+  infoRow(label: Resource, value: string) {
     Row() {
       Text(label)
         .fontSize(13)
@@ -129,7 +130,7 @@ export struct DevicePage {
     }
     const serial = info.ykmanInfo.serialNumber;
     if (serial === null) {
-      return '不可读';
+      return ResUtil.str($r('app.string.device_serial_unknown'));
     }
     return String(serial);
   }
@@ -139,15 +140,18 @@ export struct DevicePage {
     if (info === undefined) {
       return '-';
     }
-    return info.oathInfo.passwordProtection === 'enabled' ? '已设置' : '未设置';
+    // 判据 'enabled' 为卡片数据串（逻辑字面量不动），仅展示层映射为资源文案
+    return info.oathInfo.passwordProtection === 'enabled'
+      ? ResUtil.str($r('app.string.device_protection_enabled'))
+      : ResUtil.str($r('app.string.device_protection_disabled'));
   }
 
   /** 修改密码提示：卡片已设密码（会话已解锁即可直接修改）；无密码则直接设置 */
-  private changePassHint(): string {
+  private changePassHintRes(): Resource {
     if (OathSessionManager.getInstance().getHasKey()) {
-      return '卡片已设置安全密码，当前会话已验证，可直接修改';
+      return $r('app.string.device_hint_change');
     }
-    return '留空并确认即移除密码；设置后生效于当前卡片';
+    return $r('app.string.device_hint_clear');
   }
 
   private async submitChange(): Promise<void> {
@@ -155,7 +159,7 @@ export struct DevicePage {
       return;
     }
     if (this.newPwd !== this.confirmPwd) {
-      this.toast('两次输入的新密码不一致');
+      this.toast(ResUtil.str($r('app.string.device_password_mismatch')));
       return;
     }
     this.busy = true;
@@ -163,7 +167,7 @@ export struct DevicePage {
       await OathSessionManager.getInstance().modifyPassword(this.newPwd, this.toast);
       this.newPwd = '';
       this.confirmPwd = '';
-      this.toast('安全密码已更新');
+      this.toast(ResUtil.str($r('app.string.device_password_updated')));
     } catch (err) {
       this.toast((err as Error).message);
     } finally {

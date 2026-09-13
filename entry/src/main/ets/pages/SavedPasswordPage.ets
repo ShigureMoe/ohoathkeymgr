@@ -11,6 +11,7 @@
  */
 import { SavedPasswordStore } from '../security/SavedPasswordStore';
 import { AppState } from '../viewmodel/AppState';
+import { ResUtil } from '../common/ResUtil';
 
 @Component
 export struct SavedPasswordPage {
@@ -44,7 +45,7 @@ export struct SavedPasswordPage {
                     .fontSize(15)
                     .fontWeight(FontWeight.Medium)
                   Blank()
-                  Button('删除')
+                  Button($r('app.string.common_delete'))
                     .height(30)
                     .fontSize(12)
                     .padding({ left: 14, right: 14 })
@@ -79,7 +80,7 @@ export struct SavedPasswordPage {
       .width('100%')
       .height('100%')
     }
-    .title('已保存的会话密码')
+    .title($r('app.string.saved_pwd_title'))
   }
 
   /** 空状态（v2）：文字提示引导手动添加，下方直接提供添加入口行（保证可添加第一条） */
@@ -87,10 +88,10 @@ export struct SavedPasswordPage {
   emptyState() {
     Column({ space: 10 }) {
       Column({ space: 8 }) {
-        Text('暂无已保存的会话密码')
+        Text($r('app.string.saved_pwd_empty'))
           .fontSize(15)
           .fontColor($r('app.color.text_hint'))
-        Text('点击下方添加按钮登记卡片会话密码')
+        Text($r('app.string.saved_pwd_empty_hint'))
           .fontSize(12)
           .fontColor($r('app.color.text_hint'))
       }
@@ -108,7 +109,7 @@ export struct SavedPasswordPage {
   @Builder
   addEntryRow() {
     Row() {
-      Text('+ 添加密码')
+      Text($r('app.string.saved_pwd_add'))
         .fontSize(15)
         .fontWeight(FontWeight.Medium)
         .fontColor($r('app.color.accent'))
@@ -127,14 +128,14 @@ export struct SavedPasswordPage {
   confirmDialog() {
     Stack({ alignContent: Alignment.Center }) {
       Column({ space: 12 }) {
-        Text('删除已保存密码')
+        Text($r('app.string.saved_pwd_delete_title'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
-        Text('确定删除序列号 ' + this.pendingSerial + ' 的已保存会话密码？删除后连接该卡片需重新输入密码。')
+        Text($r('app.string.saved_pwd_delete_message', this.pendingSerial))
           .fontSize(12)
           .fontColor($r('app.color.text_secondary'))
         Row({ space: 40 }) {
-          Button('取消')
+          Button($r('app.string.common_cancel'))
             .width(110)
             .height(38)
             .fontSize(14)
@@ -144,7 +145,7 @@ export struct SavedPasswordPage {
             .onClick(() => {
               this.confirmVisible = false;
             })
-          Button(this.removeBusy ? '删除中…' : '确认删除')
+          Button(this.removeBusy ? $r('app.string.saved_pwd_delete_busy') : $r('app.string.saved_pwd_delete_confirm'))
             .width(110)
             .height(38)
             .fontSize(14)
@@ -170,33 +171,33 @@ export struct SavedPasswordPage {
   addDialog() {
     Stack({ alignContent: Alignment.Center }) {
       Column({ space: 12 }) {
-        Text('添加会话密码')
+        Text($r('app.string.saved_pwd_add_title'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
-        Text('登记卡片序列号与其会话密码，连接时自动读取免输入')
+        Text($r('app.string.saved_pwd_add_hint'))
           .fontSize(12)
           .fontColor($r('app.color.text_secondary'))
           .textAlign(TextAlign.Center)
-        TextInput({ placeholder: '卡片序列号', text: this.serialInput })
+        TextInput({ placeholder: $r('app.string.saved_pwd_serial'), text: this.serialInput })
           .type(InputType.Number)
           .width('100%')
           .onChange((value: string) => {
             this.serialInput = value;
           })
-        TextInput({ placeholder: '会话密码', text: this.passwordInput })
+        TextInput({ placeholder: $r('app.string.saved_pwd_password'), text: this.passwordInput })
           .type(InputType.Password)
           .width('100%')
           .onChange((value: string) => {
             this.passwordInput = value;
           })
-        TextInput({ placeholder: '确认密码', text: this.confirmInput })
+        TextInput({ placeholder: $r('app.string.saved_pwd_confirm'), text: this.confirmInput })
           .type(InputType.Password)
           .width('100%')
           .onChange((value: string) => {
             this.confirmInput = value;
           })
         Row({ space: 40 }) {
-          Button('取消')
+          Button($r('app.string.common_cancel'))
             .width(110)
             .height(38)
             .fontSize(14)
@@ -206,7 +207,7 @@ export struct SavedPasswordPage {
             .onClick(() => {
               this.addVisible = false;
             })
-          Button(this.addBusy ? '添加中…' : '确认添加')
+          Button(this.addBusy ? $r('app.string.saved_pwd_add_busy') : $r('app.string.saved_pwd_add_confirm'))
             .width(110)
             .height(38)
             .fontSize(14)
@@ -250,15 +251,15 @@ export struct SavedPasswordPage {
     const serialText = this.serialInput.trim();
     const serial = Number(serialText);
     if (serialText.length === 0 || !Number.isInteger(serial) || serial < 0) {
-      this.toast('请输入有效的序列号');
+      this.toast(ResUtil.str($r('app.string.saved_pwd_serial_invalid')));
       return;
     }
     if (this.passwordInput.length === 0) {
-      this.toast('请输入密码');
+      this.toast(ResUtil.str($r('app.string.saved_pwd_password_required')));
       return;
     }
     if (this.passwordInput !== this.confirmInput) {
-      this.toast('两次输入的密码不一致');
+      this.toast(ResUtil.str($r('app.string.saved_pwd_mismatch')));
       return;
     }
     this.addBusy = true;
@@ -266,11 +267,11 @@ export struct SavedPasswordPage {
       const ok = await SavedPasswordStore.add(serial, this.passwordInput);
       if (!ok) {
         // 序列号已存在：提示且不覆盖（需先删除再添加），弹窗不关闭
-        this.toast('该序列号已存在');
+        this.toast(ResUtil.str($r('app.string.saved_pwd_exists')));
         return;
       }
       this.addVisible = false;
-      this.toast('添加成功');
+      this.toast(ResUtil.str($r('app.string.saved_pwd_added')));
       this.reload();
     } finally {
       this.addBusy = false;
@@ -291,7 +292,7 @@ export struct SavedPasswordPage {
     try {
       await SavedPasswordStore.remove(this.pendingSerial);
       this.confirmVisible = false;
-      this.toast('已删除');
+      this.toast(ResUtil.str($r('app.string.saved_pwd_deleted')));
       this.reload();
     } finally {
       this.removeBusy = false;

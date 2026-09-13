@@ -7,6 +7,7 @@ import { AppPreferences } from '../storage/AppPreferences';
 import { ConnectionManager } from '../service/ConnectionManager';
 import { TokenRefreshScheduler } from '../service/TokenRefreshScheduler';
 import { ThemeManager } from '../service/ThemeManager';
+import { LanguageManager } from '../service/LanguageManager';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -14,6 +15,8 @@ export default class EntryAbility extends UIAbility {
     AppPreferences.init(this.context);
     ConnectionManager.getInstance().init(this.context);
     ThemeManager.apply(this.context);
+    // 恢复用户选择的应用语言（非 follow-system 时还原系统偏好语言；app-i18n D1）
+    LanguageManager.initOnCreate();
     TokenRefreshScheduler.getInstance().start();
     Log.info('%{public}s', 'Ability onCreate');
   }

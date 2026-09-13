@@ -22,7 +22,7 @@ export struct AddFabMenu {
           Row({ space: 8 }) {
             Text('📷')
               .fontSize(16)
-            Text('扫描二维码')
+            Text($r('app.string.add_scan'))
               .fontSize(14)
           }
           .padding({ left: 14, right: 14, top: 10, bottom: 10 })
@@ -36,7 +36,7 @@ export struct AddFabMenu {
           Row({ space: 8 }) {
             Text('🔑')
               .fontSize(16)
-            Text('通用令牌')
+            Text($r('app.string.add_manual'))
               .fontSize(14)
           }
           .padding({ left: 14, right: 14, top: 10, bottom: 10 })

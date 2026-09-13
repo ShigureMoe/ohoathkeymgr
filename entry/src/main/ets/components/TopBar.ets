@@ -14,7 +14,7 @@ export struct TopBar {
 
   build() {
     Row() {
-      Text('OathKeeper')
+      Text($r('app.string.app_name'))
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .fontColor($r('app.color.text_primary'))

@@ -19,6 +19,8 @@ import { SessionPasswordStore } from '../security/SessionPasswordStore';
 import { SavedPasswordStore } from '../security/SavedPasswordStore';
 import { ParseOutcome } from '../utils/OtpauthParser';
 import { CardChannel, NfcCardChannel } from './CardChannel';
+import { ResUtil } from '../common/ResUtil';
+import { PasswordValidationError } from '../common/OathErrors';
 import { tag } from '@kit.ConnectivityKit';
 
 /** PUT 结果：重名时需要 UI 确认覆盖 */
@@ -72,12 +74,12 @@ export class OathSessionManager {
   async withSession<T>(work: (session: OathSession) => Promise<T>, toast: (msg: string) => void): Promise<T> {
     const ch = this.channel;
     if (ch === undefined) {
-      throw new Error('请先选择连接方式');
+      throw new Error(ResUtil.str($r('app.string.err_no_connection')));
     }
     return ch.withSession(async (session: OathSession) => {
       const ok = await this.authenticate(session, toast);
       if (!ok) {
-        throw new Error('解锁失败');
+        throw new Error(ResUtil.str($r('app.string.err_unlock_failed')));
       }
       return work(session);
     }, toast);
@@ -105,7 +107,7 @@ export class OathSessionManager {
         }
         return true;
       } catch (e) {
-        toast('密码错误，解锁失败');
+        toast(ResUtil.str($r('app.string.err_wrong_password_manual')));
         return false;
       }
     }
@@ -117,8 +119,9 @@ export class OathSessionManager {
           await this.tryValidate(session, saved);
           return true; // 已保存密码验证成功：不回写 SessionPasswordStore（保持配置态与记忆正交）
         } catch (e) {
-          if (!errorMessage(e).includes('密码错误')) {
-            // 通信等非密码错误类异常：不动条目，向上抛出按连接错误处理（FR-008）
+          // 判据重构（FR-007）：由消息子串匹配改为结构化 instanceof——
+          // 密码比对失败（PasswordValidationError）回落弹窗；通信等其他异常上抛按连接错误处理
+          if (!(e instanceof PasswordValidationError)) {
             throw e as Error;
           }
           // 已保存密码失效（卡片密码已在别处被修改）：保留条目不删除，直接回落弹窗输入
@@ -126,11 +129,11 @@ export class OathSessionManager {
         }
       }
     }
-    // 回落：无可用已保存密码，弹窗输入
-    const input = await UiDialogBridge.requestPassword('输入安全密码', false,
-      '卡片已设置安全密码，请输入后继续');
+    // 回落：无可用已保存密码，弹窗输入（title/hint 经 UiDialogBridge 注入，须取串）
+    const input = await UiDialogBridge.requestPassword(ResUtil.str($r('app.string.password_dialog_title_unlock')), false,
+      ResUtil.str($r('app.string.password_dialog_hint_unlock')));
     if (input === null) {
-      toast('已取消解锁');
+      toast(ResUtil.str($r('app.string.err_unlock_cancelled')));
       return false;
     }
     try {
@@ -142,7 +145,7 @@ export class OathSessionManager {
       }
       return true;
     } catch (e) {
-      toast('密码错误');
+      toast(ResUtil.str($r('app.string.err_wrong_password')));
       return false;
     }
   }
@@ -213,7 +216,7 @@ export class OathSessionManager {
       const creds = await session.listCredentials();
       const limit = DeviceInfoStore.getCredentialLimit();
       if (creds.length >= limit) {
-        throw new Error('卡片凭据数量已达上限（' + limit + ' 个）');
+        throw new Error(ResUtil.strWithArgs($r('app.string.err_account_limit'), limit));
       }
       const target = OathName.format(cred.issuer, cred.account, cred.otpType, cred.period);
       const exists = creds.some((c: CredentialInfo) => c.name === target);
@@ -277,7 +280,7 @@ export class OathSessionManager {
   async deleteCredential(name: string, toast: (msg: string) => void): Promise<void> {
     const cred = TokenStore.getInstance().getCredential(name);
     if (cred === undefined) {
-      throw new Error('凭据不存在');
+      throw new Error(ResUtil.str($r('app.string.err_credential_not_found')));
     }
     await this.withSession(async (session: OathSession) => {
       await session.deleteCredential(cred.credId);
@@ -289,7 +292,7 @@ export class OathSessionManager {
   async requestHotp(name: string, toast: (msg: string) => void): Promise<void> {
     const cred = TokenStore.getInstance().getCredential(name);
     if (cred === undefined) {
-      throw new Error('凭据不存在');
+      throw new Error(ResUtil.str($r('app.string.err_credential_not_found')));
     }
     await this.withSession(async (session: OathSession) => {
       const code = await session.calculate(cred.credId, OtpType.HOTP, 0, Math.floor(Date.now() / 1000));
@@ -301,7 +304,7 @@ export class OathSessionManager {
   async requestTouch(name: string, toast: (msg: string) => void): Promise<void> {
     const cred = TokenStore.getInstance().getCredential(name);
     if (cred === undefined) {
-      throw new Error('凭据不存在');
+      throw new Error(ResUtil.str($r('app.string.err_credential_not_found')));
     }
     const requestId = ++this.touchRequestId;
     AppState.setTouchPrompt(true);

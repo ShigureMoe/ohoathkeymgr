@@ -25,6 +25,7 @@ import { SettingsPage } from './SettingsPage';
 import { SavedPasswordPage } from './SavedPasswordPage';
 import { HdsTabs, HdsTabsController, hdsMaterial } from '@kit.UIDesignKit';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
+import { ResUtil } from '../common/ResUtil';
 
 @Entry
 @Component
@@ -76,7 +77,7 @@ struct Index {
       this.currentModeText = mode === ConnMode.USB ? 'usb' : (mode === ConnMode.NFC ? 'nfc' : 'none');
       this.currentUsbSerial = status === ConnStatus.CONNECTED ? 'connected' : '';
       if (status === ConnStatus.FAILED && mode === ConnMode.USB) {
-        this.toast('连接已断开，令牌列表已置灰');
+        this.toast(ResUtil.str($r('app.string.err_connection_lost')));
       }
     };
     l.onDeviceLost = (message: string) => {
@@ -105,7 +106,7 @@ struct Index {
               }
             })
           }
-          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.key_horizontal')) }, '令牌'))
+          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.key_horizontal')) }, $r('app.string.tab_accounts')))
 
           TabContent() {
             DevicePage({
@@ -114,7 +115,7 @@ struct Index {
               }
             })
           }
-          .tabBar(new BottomTabBarStyle($r('app.media.security_card'), '设备管理')
+          .tabBar(new BottomTabBarStyle($r('app.media.security_card'), $r('app.string.tab_devices'))
             .iconStyle({ unselectedColor: $r('app.color.text_secondary'), selectedColor: $r('app.color.token_accent') }))
 
           TabContent() {
@@ -124,7 +125,7 @@ struct Index {
               }
             })
           }
-          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')) }, '设置'))
+          .tabBar(new BottomTabBarStyle({ normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')) }, $r('app.string.tab_settings')))
         }
         .barPosition(BarPosition.End)
         .vertical(false)
@@ -171,10 +172,10 @@ struct Index {
         if (this.nfcPromptVisible) {
           Stack({ alignContent: Alignment.Center }) {
             Column({ space: 10 }) {
-              Text('请将安全卡片靠近手机 NFC 感应区')
+              Text($r('app.string.nfc_tap_prompt'))
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
-              Button('取消')
+              Button($r('app.string.common_cancel'))
                 .width(120)
                 .height(34)
                 .fontSize(13)
@@ -198,10 +199,10 @@ struct Index {
         if (this.touchPromptVisible) {
           Stack({ alignContent: Alignment.Center }) {
             Column({ space: 10 }) {
-              Text('请触摸安全卡片以完成验证')
+              Text($r('app.string.touch_prompt'))
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
-              Button('取消')
+              Button($r('app.string.common_cancel'))
                 .width(120)
                 .height(34)
                 .fontSize(13)
@@ -238,13 +239,14 @@ struct Index {
   }
 
   private configureSessionPassword(): void {
-    UiDialogBridge.requestPassword('会话安全密码', true,
-      '留空表示无会话密码（影响下次验证）').then((value: string | null) => {
+    // title/hint 经 UiDialogBridge 注入（string 类型），须用 ResUtil 取串（此处为注入源）
+    UiDialogBridge.requestPassword(ResUtil.str($r('app.string.password_dialog_title_session')), true,
+      ResUtil.str($r('app.string.password_dialog_hint_session'))).then((value: string | null) => {
       if (value === null) {
         return;
       }
       SessionPasswordStore.set(value);
-      this.toast('会话密码已设置');
+      this.toast(ResUtil.str($r('app.string.err_session_password_set')));
     });
   }
 
@@ -269,7 +271,8 @@ struct Index {
     ConnectionManager.getInstance().connectUsb(device, (msg: string) => {
       this.toast(msg);
     }).then(() => {
-      this.toast('已连接 ' + device.label);
+      // toast 回调需 string：组件内用 ResUtil.strWithArgs 带参取串
+      this.toast(ResUtil.strWithArgs($r('app.string.connected_toast'), device.label));
     }).catch((err: Error) => {
       this.toast(err.message);
     });

@@ -4,6 +4,7 @@
  */
 import { OtpauthParser } from '../utils/OtpauthParser';
 import { UriImporter } from '../viewmodel/UriImporter';
+import { ResUtil } from '../common/ResUtil';
 
 @Component
 export struct AddByUriSheet {
@@ -19,11 +20,11 @@ export struct AddByUriSheet {
         Scroll() {
           Column({ space: 12 }) {
             Row() {
-              Text('从链接添加')
+              Text($r('app.string.add_by_uri_title'))
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
               Blank()
-              Text('关闭')
+              Text($r('app.string.common_close'))
                 .fontSize(13)
                 .fontColor($r('app.color.text_secondary'))
                 .onClick(() => {
@@ -32,7 +33,7 @@ export struct AddByUriSheet {
             }
             .width('100%')
 
-            Text('粘贴 otpauth:// 或 otpauth-migration:// 链接（也可使用菜单"扫描二维码"直接扫码）')
+            Text($r('app.string.add_uri_hint'))
               .fontSize(12)
               .fontColor($r('app.color.text_secondary'))
               .textAlign(TextAlign.Start)
@@ -44,7 +45,7 @@ export struct AddByUriSheet {
                 this.uriText = v;
               })
 
-            Button(this.busy ? '解析中…' : '解析并添加')
+            Button(this.busy ? $r('app.string.add_uri_parse_busy') : $r('app.string.add_uri_submit'))
               .width('100%')
               .height(44)
               .fontSize(15)
@@ -72,7 +73,7 @@ export struct AddByUriSheet {
 
   private async submit(): Promise<void> {
     if (this.busy || this.uriText.trim().length === 0) {
-      this.toast('请粘贴链接');
+      this.toast(ResUtil.str($r('app.string.add_uri_empty')));
       return;
     }
     this.busy = true;

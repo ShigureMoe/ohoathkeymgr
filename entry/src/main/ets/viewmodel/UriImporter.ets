@@ -5,6 +5,7 @@
 import { promptAction } from '@kit.ArkUI';
 import { ParseOutcome } from '../utils/OtpauthParser';
 import { OathSessionManager } from '../service/OathSessionManager';
+import { ResUtil } from '../common/ResUtil';
 
 export class UriImporter {
   /** 解析结果写入卡片；重名凭据弹窗确认后覆盖 */
@@ -13,25 +14,27 @@ export class UriImporter {
     const result = await OathSessionManager.getInstance().addOutcome(outcome, toast);
     if (result.conflicts.length === 0) {
       if (result.added > 0) {
-        toast('已添加 ' + result.added + ' 条凭据');
+        toast(ResUtil.strWithArgs($r('app.string.import_added'), result.added));
       } else {
-        toast('未添加凭据');
+        toast(ResUtil.str($r('app.string.import_none')));
       }
       return;
     }
-    const message = '以下凭据已存在：' + result.conflicts.join('、') + '。是否覆盖？';
+    // 重名清单 join 分隔符随语言取词条（zh '、' / en ', '）
+    const message = ResUtil.strWithArgs($r('app.string.import_exists_message'),
+      result.conflicts.join(ResUtil.str($r('app.string.list_separator'))));
     await new Promise<void>((resolve: () => void) => {
       ui.getPromptAction().showDialog({
-        title: '凭据已存在',
+        title: $r('app.string.add_exists_title'),
         message: message,
         buttons: [
-          { text: '取消', color: $r('app.color.text_secondary') },
-          { text: '全部覆盖', color: $r('app.color.danger') }
+          { text: $r('app.string.common_cancel'), color: $r('app.color.text_secondary') },
+          { text: $r('app.string.import_overwrite_all'), color: $r('app.color.danger') }
         ]
       }).then((res: promptAction.ShowDialogSuccessResponse) => {
         if (res.index === 1) {
           OathSessionManager.getInstance().addOutcomeForce(outcome.credentials, toast).then((ok: number) => {
-            toast('已添加 ' + (result.added + ok) + ' 条凭据');
+            toast(ResUtil.strWithArgs($r('app.string.import_added'), result.added + ok));
             resolve();
           }).catch((err: Error) => {
             toast(err.message);
@@ -39,7 +42,9 @@ export class UriImporter {
           });
           return;
         }
-        toast(result.added > 0 ? '已添加 ' + result.added + ' 条' : '未添加凭据');
+        toast(result.added > 0
+          ? ResUtil.strWithArgs($r('app.string.import_added_short'), result.added)
+          : ResUtil.str($r('app.string.import_none')));
         resolve();
       }).catch(() => {
         resolve();

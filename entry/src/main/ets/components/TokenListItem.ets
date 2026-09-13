@@ -11,6 +11,7 @@ import { TokenListItem } from '../viewmodel/TokenStore';
 import { TokenItemState } from '../model/UiState';
 import { OtpType } from '../model/Credential';
 import { CountdownArc } from './CountdownArc';
+import { ResUtil } from '../common/ResUtil';
 
 /** 列表项回调（struct 字段不能为 interface 类型，故用 class） */
 export class TokenItemCallbacks {
@@ -30,7 +31,7 @@ export struct TokenListItemComp {
 
   @Builder
   deleteButton() {
-    Button('删除')
+    Button($r('app.string.common_delete'))
       .width(64)
       .height('100%')
       .backgroundColor($r('app.color.danger_bg'))
@@ -98,7 +99,7 @@ export struct TokenListItemComp {
                       this.copyCode();
                     })
                   )
-                Text('长按复制')
+                Text($r('app.string.token_long_press_copy'))
                   .fontSize(10)
                   .fontColor($r('app.color.text_hint'))
               }
@@ -124,7 +125,8 @@ export struct TokenListItemComp {
             })
           } else if (this.item.state === TokenItemState.TOUCH ||
             this.item.state === TokenItemState.TOUCH_PROMPTING) {
-            Button(this.item.state === TokenItemState.TOUCH_PROMPTING ? '等待触摸…' : '触摸')
+            Button(this.item.state === TokenItemState.TOUCH_PROMPTING
+              ? $r('app.string.token_touch_waiting') : $r('app.string.token_touch'))
               .width(64)
               .height(30)
               .fontSize(12)
@@ -175,7 +177,9 @@ export struct TokenListItemComp {
     }
     const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.item.code);
     pasteboard.getSystemPasteboard().setData(pasteData).then(() => {
-      this.getUIContext().getPromptAction().showToast({ message: '令牌已复制' });
+      this.getUIContext().getPromptAction().showToast({
+        message: ResUtil.str($r('app.string.token_copied'))
+      });
     }).catch(() => {
     });
   }

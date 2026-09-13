@@ -4,6 +4,7 @@
  */
 import { scanCore, scanBarcode } from '@kit.ScanKit';
 import { common } from '@kit.AbilityKit';
+import { ResUtil } from '../common/ResUtil';
 
 export class ScanService {
   /** 拉起系统扫码界面；返回原始码值（不支持默认界面扫码时抛错） */
@@ -16,7 +17,7 @@ export class ScanService {
       supported = true;
     }
     if (!supported) {
-      throw new Error('当前设备不支持默认界面扫码');
+      throw new Error(ResUtil.str($r('app.string.import_scan_unsupported')));
     }
     const options: scanBarcode.ScanOptions = {
       scanTypes: [scanCore.ScanType.ALL],

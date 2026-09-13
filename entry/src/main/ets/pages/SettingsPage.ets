@@ -9,6 +9,8 @@ import { common, OpenLinkOptions } from '@kit.AbilityKit';
 import { AppContextHolder } from '../common/AppContextHolder';
 import { AppPreferences } from '../storage/AppPreferences';
 import { ThemeManager } from '../service/ThemeManager';
+import { LanguageManager } from '../service/LanguageManager';
+import { ResUtil } from '../common/ResUtil';
 import { OathSessionManager } from '../service/OathSessionManager';
 
 // 关于应用外链（用户指定，取值逐字一致，禁止改写）
@@ -16,6 +18,9 @@ const ABOUT_URL_AUTHOR: string = 'https://github.com/ShigureMoe';
 const ABOUT_URL_REPO: string = 'https://github.com/ShigureMoe/ohoathkeymgr';
 const ABOUT_URL_ISSUES: string = 'https://github.com/ShigureMoe/ohoathkeymgr/issues';
 const ABOUT_URL_LICENSE: string = 'https://raw.githubusercontent.com/ShigureMoe/ohoathkeymgr/refs/heads/master/COPYING';
+
+// 语言偏好内部值（与 Select 选项下标一一对应；内部值不翻译，仅展示层资源化）
+const LANGUAGE_VALUES: string[] = [LanguageManager.FOLLOW_SYSTEM, LanguageManager.ZH_HANS, LanguageManager.EN_US];
 
 @Component
 export struct SettingsPage {
@@ -25,6 +30,7 @@ export struct SettingsPage {
   // Navigation 路由栈（与 Index 的 @Provide('navPathStack') 配对）：跳转已保存会话密码管理页
   @Consume('navPathStack') navPathStack: NavPathStack;
   @State themeValue: string = 'system';
+  @State langValue: string = LanguageManager.FOLLOW_SYSTEM;
   @State resetDialogVisible: boolean = false;
   @State resetInput: string = '';
   @State resetBusy: boolean = false;
@@ -32,13 +38,14 @@ export struct SettingsPage {
 
   aboutToAppear(): void {
     this.themeValue = AppPreferences.getString('ui_theme', ThemeManager.THEME_SYSTEM);
+    this.langValue = LanguageManager.getPersisted();
   }
 
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
       Scroll() {
         Column({ space: 12 }) {
-          Text('设置')
+          Text($r('app.string.tab_settings'))
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
             .alignSelf(ItemAlign.Start)
@@ -46,16 +53,16 @@ export struct SettingsPage {
 
           Column({ space: 0 }) {
             Row() {
-              Text('暗黑模式')
+              Text($r('app.string.settings_dark_mode'))
                 .fontSize(15)
               Blank()
             }
             .width('100%')
             .padding(16)
             Column({ space: 12 }) {
-              this.themeRow('跟随系统', ThemeManager.THEME_SYSTEM)
-              this.themeRow('深色', ThemeManager.THEME_DARK)
-              this.themeRow('亮色', ThemeManager.THEME_LIGHT)
+              this.themeRow($r('app.string.settings_theme_system'), ThemeManager.THEME_SYSTEM)
+              this.themeRow($r('app.string.settings_theme_dark'), ThemeManager.THEME_DARK)
+              this.themeRow($r('app.string.settings_theme_light'), ThemeManager.THEME_LIGHT)
             }
             .width('100%')
             .padding({ left: 16, right: 16, bottom: 14 })
@@ -64,8 +71,34 @@ export struct SettingsPage {
           .backgroundColor($r('app.color.surface_card'))
           .borderRadius(10)
 
+          // 语言设置组（app-i18n US1）：下拉框三选项，选择即时生效并持久化
+          Column({ space: 0 }) {
+            Row() {
+              Text($r('app.string.settings_language'))
+                .fontSize(15)
+              Blank()
+            }
+            .width('100%')
+            .padding(16)
+            Select(this.languageOptions())
+              .selected(this.languageIndex())
+              .value(this.languageLabelRes())
+              .onSelect((index: number) => {
+                this.onLanguageSelect(index);
+              })
+              .width('100%')
+              .font({ size: 14 })
+              .selectedOptionFont({ size: 14 })
+              .optionFont({ size: 14 })
+              .backgroundColor($r('app.color.surface_card'))
+              .margin({ left: 16, right: 16, bottom: 14 })
+          }
+          .width('92%')
+          .backgroundColor($r('app.color.surface_card'))
+          .borderRadius(10)
+
           Row() {
-            Text('重置安全卡片')
+            Text($r('app.string.settings_reset_entry'))
               .fontSize(15)
               .fontColor(this.connMode === 'none' ? $r('app.color.text_hint') : $r('app.color.danger'))
             Blank()
@@ -84,7 +117,7 @@ export struct SettingsPage {
           })
 
           Row() {
-            Text('已保存的会话密码')
+            Text($r('app.string.settings_saved_passwords'))
               .fontSize(15)
             Blank()
             Text('>')
@@ -101,7 +134,7 @@ export struct SettingsPage {
           })
 
           Row() {
-            Text('关于应用')
+            Text($r('app.string.settings_about'))
               .fontSize(15)
             Blank()
             Text('>')
@@ -136,7 +169,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  themeRow(label: string, value: string) {
+  themeRow(label: Resource, value: string) {
     Row() {
       Text(label)
         .fontSize(14)
@@ -158,22 +191,60 @@ export struct SettingsPage {
     .width('100%')
   }
 
+  // ---------- 语言设置（app-i18n US1 / D6） ----------
+
+  private languageOptions(): Array<SelectOption> {
+    return [
+      { value: $r('app.string.lang_follow_system') },
+      { value: $r('app.string.lang_chinese') },
+      { value: $r('app.string.lang_english') }
+    ];
+  }
+
+  /** 当前偏好对应的选项下标 */
+  private languageIndex(): number {
+    const idx = LANGUAGE_VALUES.indexOf(this.langValue);
+    return idx >= 0 ? idx : 0;
+  }
+
+  /** Select 收起态显示文本（跟随语言切换取资源） */
+  private languageLabelRes(): Resource {
+    if (this.langValue === LanguageManager.ZH_HANS) {
+      return $r('app.string.lang_chinese');
+    }
+    if (this.langValue === LanguageManager.EN_US) {
+      return $r('app.string.lang_english');
+    }
+    return $r('app.string.lang_follow_system');
+  }
+
+  /** 下拉框选择：即时生效 + 持久化；跟随系统按平台约束提示重启生效（D1） */
+  private onLanguageSelect(index: number): void {
+    const value = index >= 0 && index < LANGUAGE_VALUES.length
+      ? LANGUAGE_VALUES[index] : LanguageManager.FOLLOW_SYSTEM;
+    this.langValue = value;
+    LanguageManager.persistAndApply(value);
+    if (value === LanguageManager.FOLLOW_SYSTEM) {
+      this.toast(ResUtil.str($r('app.string.settings_language_restart_hint')));
+    }
+  }
+
   @Builder
   resetDialog() {
     Stack({ alignContent: Alignment.Center }) {
       Column({ space: 12 }) {
-        Text('重置 OATH 应用')
+        Text($r('app.string.settings_reset_title'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
-        Text('当前操作会重置安全卡片的 OATH 应用数据（删除全部凭据与安全密码），请谨慎操作，确认操作请输入 RESETTHEKEY')
+        Text($r('app.string.settings_reset_warning'))
           .fontSize(12)
           .fontColor($r('app.color.text_secondary'))
-        TextInput({ placeholder: '输入 RESETTHEKEY', text: this.resetInput })
+        TextInput({ placeholder: $r('app.string.settings_reset_input_hint'), text: this.resetInput })
           .onChange((v: string) => {
             this.resetInput = v;
           })
         Row({ space: 40 }) {
-          Button('取消')
+          Button($r('app.string.common_cancel'))
             .width(110)
             .height(38)
             .fontSize(14)
@@ -182,7 +253,7 @@ export struct SettingsPage {
             .onClick(() => {
               this.resetDialogVisible = false;
             })
-          Button(this.resetBusy ? '重置中…' : '确认重置')
+          Button(this.resetBusy ? $r('app.string.settings_reset_busy') : $r('app.string.settings_reset_confirm'))
             .width(110)
             .height(38)
             .fontSize(14)
@@ -205,14 +276,14 @@ export struct SettingsPage {
 
   private async confirmReset(): Promise<void> {
     if (this.resetInput !== 'RESETTHEKEY') {
-      this.toast('请输入 RESETTHEKEY');
+      this.toast(ResUtil.str($r('app.string.settings_reset_input_required')));
       return;
     }
     this.resetBusy = true;
     try {
       await OathSessionManager.getInstance().resetCard(this.toast);
       this.resetDialogVisible = false;
-      this.toast('卡片已重置');
+      this.toast(ResUtil.str($r('app.string.settings_reset_done')));
     } catch (err) {
       this.toast((err as Error).message);
     } finally {
@@ -224,18 +295,18 @@ export struct SettingsPage {
   aboutDialog() {
     Stack({ alignContent: Alignment.Center }) {
       Column({ space: 12 }) {
-        Text('关于应用')
+        Text($r('app.string.settings_about'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
         Column({ space: 12 }) {
-          this.aboutRow('作者', 'ShigureMoe', ABOUT_URL_AUTHOR)
-          this.aboutRow('项目地址', ABOUT_URL_REPO, ABOUT_URL_REPO)
-          this.aboutRow('问题反馈', ABOUT_URL_ISSUES, ABOUT_URL_ISSUES)
-          this.aboutRow('License', 'GPL-3.0 license', ABOUT_URL_LICENSE)
-          this.aboutRow('兼容性测试', 'Yubikey 5 NFC、Canokeys Pigeon', '')
+          this.aboutRow($r('app.string.settings_about_author'), 'ShigureMoe', ABOUT_URL_AUTHOR)
+          this.aboutRow($r('app.string.settings_about_repo'), ABOUT_URL_REPO, ABOUT_URL_REPO)
+          this.aboutRow($r('app.string.settings_about_issues'), ABOUT_URL_ISSUES, ABOUT_URL_ISSUES)
+          this.aboutRow($r('app.string.settings_about_license'), 'GPL-3.0 license', ABOUT_URL_LICENSE)
+          this.aboutRow($r('app.string.settings_about_compat'), 'Yubikey 5 NFC、Canokeys Pigeon', '')
         }
         .width('100%')
-        Button('关闭')
+        Button($r('app.string.common_close'))
           .width(110)
           .height(38)
           .fontSize(14)
@@ -264,7 +335,7 @@ export struct SettingsPage {
 
   // url 传空串表示纯文本行（不可点击，无点击态反馈）
   @Builder
-  aboutRow(label: string, content: string, url: string) {
+  aboutRow(label: Resource, content: string, url: string) {
     if (url !== '') {
       Row() {
         this.aboutRowContent(label, content, true)
@@ -284,7 +355,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  aboutRowContent(label: string, content: string, isLink: boolean) {
+  aboutRowContent(label: Resource, content: string, isLink: boolean) {
     Text(label)
       .fontSize(14)
       .fontColor($r('app.color.text_secondary'))
@@ -306,10 +377,10 @@ export struct SettingsPage {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
       const options: OpenLinkOptions = { appLinkingOnly: false };
       context.openLink(url, options).catch(() => {
-        this.toast('打开链接失败');
+        this.toast(ResUtil.str($r('app.string.settings_open_link_failed')));
       });
     } catch (err) {
-      this.toast('打开链接失败');
+      this.toast(ResUtil.str($r('app.string.settings_open_link_failed')));
     }
   }
 }

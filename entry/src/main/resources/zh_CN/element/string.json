@@ -18,55 +18,55 @@
     },
     {
       "name": "common_cancel",
-      "value": "Cancel"
+      "value": "取消"
     },
     {
       "name": "common_confirm",
-      "value": "OK"
+      "value": "确定"
     },
     {
       "name": "common_close",
-      "value": "Close"
+      "value": "关闭"
     },
     {
       "name": "common_delete",
-      "value": "Delete"
+      "value": "删除"
     },
     {
       "name": "tab_accounts",
-      "value": "Accounts"
+      "value": "令牌"
     },
     {
       "name": "tab_devices",
-      "value": "Devices"
+      "value": "设备管理"
     },
     {
       "name": "tab_settings",
-      "value": "Settings"
+      "value": "设置"
     },
     {
       "name": "settings_dark_mode",
-      "value": "Dark mode"
+      "value": "暗黑模式"
     },
     {
       "name": "settings_theme_system",
-      "value": "Follow system"
+      "value": "跟随系统"
     },
     {
       "name": "settings_theme_dark",
-      "value": "Dark"
+      "value": "深色"
     },
     {
       "name": "settings_theme_light",
-      "value": "Light"
+      "value": "亮色"
     },
     {
       "name": "settings_language",
-      "value": "Language"
+      "value": "语言"
     },
     {
       "name": "lang_follow_system",
-      "value": "Follow system"
+      "value": "跟随系统"
     },
     {
       "name": "lang_chinese",
@@ -78,59 +78,59 @@
     },
     {
       "name": "settings_language_restart_hint",
-      "value": "Takes effect after restart"
+      "value": "重启应用后生效"
     },
     {
       "name": "settings_reset_entry",
-      "value": "Reset security key"
+      "value": "重置安全卡片"
     },
     {
       "name": "settings_reset_title",
-      "value": "Reset OATH application"
+      "value": "重置 OATH 应用"
     },
     {
       "name": "settings_reset_warning",
-      "value": "WARNING! This will delete all stored OATH accounts and restore factory settings. Type RESETTHEKEY to confirm."
+      "value": "当前操作会重置安全卡片的 OATH 应用数据（删除全部凭据与安全密码），请谨慎操作，确认操作请输入 RESETTHEKEY"
     },
     {
       "name": "settings_reset_input_hint",
-      "value": "Type RESETTHEKEY"
+      "value": "输入 RESETTHEKEY"
     },
     {
       "name": "settings_reset_input_required",
-      "value": "Please type RESETTHEKEY"
+      "value": "请输入 RESETTHEKEY"
     },
     {
       "name": "settings_reset_busy",
-      "value": "Resetting…"
+      "value": "重置中…"
     },
     {
       "name": "settings_reset_confirm",
-      "value": "Reset"
+      "value": "确认重置"
     },
     {
       "name": "settings_reset_done",
-      "value": "Reset complete. All OATH accounts have been deleted from the security key."
+      "value": "卡片已重置"
     },
     {
       "name": "settings_saved_passwords",
-      "value": "Remembered passwords"
+      "value": "已保存的会话密码"
     },
     {
       "name": "settings_about",
-      "value": "About"
+      "value": "关于应用"
     },
     {
       "name": "settings_about_author",
-      "value": "Author"
+      "value": "作者"
     },
     {
       "name": "settings_about_repo",
-      "value": "Repository"
+      "value": "项目地址"
     },
     {
       "name": "settings_about_issues",
-      "value": "Issues"
+      "value": "问题反馈"
     },
     {
       "name": "settings_about_license",
@@ -138,559 +138,559 @@
     },
     {
       "name": "settings_about_compat",
-      "value": "Compatibility"
+      "value": "兼容性测试"
     },
     {
       "name": "settings_open_link_failed",
-      "value": "Failed to open link"
+      "value": "打开链接失败"
     },
     {
       "name": "token_empty_no_conn",
-      "value": "Select a connection method first"
+      "value": "请先选择连接方式"
     },
     {
       "name": "token_empty_nfc",
-      "value": "Tap your security key to load accounts"
+      "value": "碰卡以读取令牌"
     },
     {
       "name": "token_empty_usb",
-      "value": "Connected. No accounts found."
+      "value": "连接成功，暂无凭据"
     },
     {
       "name": "token_empty_hint",
-      "value": "Tap the top-right corner to select a connection method"
+      "value": "点击右上角选择连接方式"
     },
     {
       "name": "token_delete_title",
-      "value": "Delete account"
+      "value": "删除凭据"
     },
     {
       "name": "token_delete_message",
-      "value": "Delete account: %s?"
+      "value": "确定从安全卡片删除该凭据？"
     },
     {
       "name": "token_deleted",
-      "value": "Account deleted."
+      "value": "凭据已删除"
     },
     {
       "name": "token_long_press_copy",
-      "value": "Long-press to copy"
+      "value": "长按复制"
     },
     {
       "name": "token_copied",
-      "value": "Code copied"
+      "value": "令牌已复制"
     },
     {
       "name": "token_touch",
-      "value": "Touch"
+      "value": "触摸"
     },
     {
       "name": "token_touch_waiting",
-      "value": "Waiting for touch…"
+      "value": "等待触摸…"
     },
     {
       "name": "add_scan",
-      "value": "Scan QR code"
+      "value": "扫描二维码"
     },
     {
       "name": "add_manual",
-      "value": "Add account"
+      "value": "通用令牌"
     },
     {
       "name": "add_manual_title",
-      "value": "Add account"
+      "value": "添加通用令牌"
     },
     {
       "name": "add_by_uri_title",
-      "value": "Add from URI"
+      "value": "从链接添加"
     },
     {
       "name": "add_issuer_hint",
-      "value": "Issuer (e.g. GitHub)"
+      "value": "Issuer（如 GitHub）"
     },
     {
       "name": "add_account_hint",
-      "value": "Account (e.g. user@example.com)"
+      "value": "Account（如 user@example.com）"
     },
     {
       "name": "add_secret_hint",
-      "value": "Enter a secret key (base32)"
+      "value": "Secret（Base32，可省略等号）"
     },
     {
       "name": "add_type",
-      "value": "Type"
+      "value": "类型"
     },
     {
       "name": "add_algo",
-      "value": "Algorithm"
+      "value": "算法"
     },
     {
       "name": "add_digits",
-      "value": "Digits"
+      "value": "位数"
     },
     {
       "name": "add_period",
-      "value": "Period (s)"
+      "value": "周期（秒）"
     },
     {
       "name": "add_counter",
-      "value": "Initial counter"
+      "value": "初始计数器"
     },
     {
       "name": "add_counter_hint",
-      "value": "Initial counter (default 0)"
+      "value": "初始计数器（默认 0）"
     },
     {
       "name": "add_require_touch",
-      "value": "Require touch"
+      "value": "需要触摸"
     },
     {
       "name": "add_touch_unsupported",
-      "value": "Require touch is not supported on this security key (firmware ≥4.2.6 required)."
+      "value": "当前设备固件不支持触摸属性（需固件 ≥4.2.6）"
     },
     {
       "name": "add_submit",
-      "value": "Add"
+      "value": "添加"
     },
     {
       "name": "add_busy",
-      "value": "Adding…"
+      "value": "添加中…"
     },
     {
       "name": "add_account_required",
-      "value": "Account is required"
+      "value": "请填写 Account"
     },
     {
       "name": "add_secret_invalid",
-      "value": "Secret is not valid Base32"
+      "value": "Secret 不是有效的 Base32"
     },
     {
       "name": "add_exists_title",
-      "value": "Account already exists"
+      "value": "凭据已存在"
     },
     {
       "name": "add_exists_message",
-      "value": "An account called %s already exists on this security key. Do you want to overwrite it?"
+      "value": "已存在同名凭据（%s），是否覆盖？"
     },
     {
       "name": "add_overwrite",
-      "value": "Overwrite"
+      "value": "覆盖"
     },
     {
       "name": "add_overwritten",
-      "value": "Account overwritten."
+      "value": "凭据已覆盖"
     },
     {
       "name": "add_done",
-      "value": "OATH account added."
+      "value": "凭据已添加"
     },
     {
       "name": "add_uri_hint",
-      "value": "Paste an otpauth:// or otpauth-migration:// URI (or use Scan QR code)"
+      "value": "粘贴 otpauth:// 或 otpauth-migration:// 链接（也可使用菜单\"扫描二维码\"直接扫码）"
     },
     {
       "name": "add_uri_empty",
-      "value": "Enter an OATH URI (otpauth://)"
+      "value": "请粘贴链接"
     },
     {
       "name": "add_uri_parse_busy",
-      "value": "Parsing…"
+      "value": "解析中…"
     },
     {
       "name": "add_uri_submit",
-      "value": "Parse and add"
+      "value": "解析并添加"
     },
     {
       "name": "import_added",
-      "value": "Added %d accounts"
+      "value": "已添加 %d 条凭据"
     },
     {
       "name": "import_added_short",
-      "value": "Added %d"
+      "value": "已添加 %d 条"
     },
     {
       "name": "import_none",
-      "value": "No accounts added"
+      "value": "未添加凭据"
     },
     {
       "name": "import_exists_message",
-      "value": "These accounts already exist: %s. Overwrite?"
+      "value": "以下凭据已存在：%s。是否覆盖？"
     },
     {
       "name": "import_overwrite_all",
-      "value": "Overwrite all"
+      "value": "全部覆盖"
     },
     {
       "name": "import_scan_unsupported",
-      "value": "Default scanner not supported on this device"
+      "value": "当前设备不支持默认界面扫码"
     },
     {
       "name": "import_scan_empty",
-      "value": "No QR code content found"
+      "value": "未识别到二维码内容"
     },
     {
       "name": "import_no_context",
-      "value": "Application context unavailable"
+      "value": "未获取到应用上下文"
     },
     {
       "name": "device_info_title",
-      "value": "Device information"
+      "value": "设备信息"
     },
     {
       "name": "device_not_connected",
-      "value": "Connect a security key first"
+      "value": "请先连接安全卡片"
     },
     {
       "name": "device_type",
-      "value": "Device type"
+      "value": "设备类型"
     },
     {
       "name": "device_serial",
-      "value": "Serial number"
+      "value": "序列号"
     },
     {
       "name": "device_serial_unknown",
-      "value": "Unknown"
+      "value": "不可读"
     },
     {
       "name": "device_firmware",
-      "value": "Firmware version"
+      "value": "固件版本"
     },
     {
       "name": "device_oath_version",
-      "value": "OATH version"
+      "value": "OATH 版本"
     },
     {
       "name": "device_password_protection",
-      "value": "Password protection"
+      "value": "密码保护"
     },
     {
       "name": "device_protection_enabled",
-      "value": "enabled"
+      "value": "已设置"
     },
     {
       "name": "device_protection_disabled",
-      "value": "disabled"
+      "value": "未设置"
     },
     {
       "name": "device_account_count",
-      "value": "Accounts"
+      "value": "凭据数量"
     },
     {
       "name": "device_change_password",
-      "value": "Change password"
+      "value": "修改安全密码"
     },
     {
       "name": "device_new_password_hint",
-      "value": "New password (leave empty and confirm to remove)"
+      "value": "新密码（留空并确认 = 移除密码）"
     },
     {
       "name": "device_confirm_password",
-      "value": "Confirm new password"
+      "value": "确认新密码"
     },
     {
       "name": "device_submit",
-      "value": "Submit"
+      "value": "提交"
     },
     {
       "name": "device_busy",
-      "value": "Submitting…"
+      "value": "提交中…"
     },
     {
       "name": "device_hint_change",
-      "value": "The security key is password protected and unlocked. You can change the password now."
+      "value": "卡片已设置安全密码，当前会话已验证，可直接修改"
     },
     {
       "name": "device_hint_clear",
-      "value": "Leave empty and confirm to remove the current password."
+      "value": "留空并确认即移除密码；设置后生效于当前卡片"
     },
     {
       "name": "device_password_mismatch",
-      "value": "The passwords do not match"
+      "value": "两次输入的新密码不一致"
     },
     {
       "name": "device_password_updated",
-      "value": "Password updated."
+      "value": "安全密码已更新"
     },
     {
       "name": "saved_pwd_title",
-      "value": "Remembered passwords"
+      "value": "已保存的会话密码"
     },
     {
       "name": "saved_pwd_empty",
-      "value": "No password stored for any security key"
+      "value": "暂无已保存的会话密码"
     },
     {
       "name": "saved_pwd_empty_hint",
-      "value": "Tap Add below to store a security key's password"
+      "value": "点击下方添加按钮登记卡片会话密码"
     },
     {
       "name": "saved_pwd_add",
-      "value": "+ Add password"
+      "value": "+ 添加密码"
     },
     {
       "name": "saved_pwd_add_title",
-      "value": "Store password"
+      "value": "添加会话密码"
     },
     {
       "name": "saved_pwd_add_hint",
-      "value": "Store the password for a security key (by serial number) to avoid entering it on each use"
+      "value": "登记卡片序列号与其会话密码，连接时自动读取免输入"
     },
     {
       "name": "saved_pwd_serial",
-      "value": "Serial number"
+      "value": "卡片序列号"
     },
     {
       "name": "saved_pwd_password",
-      "value": "Password"
+      "value": "会话密码"
     },
     {
       "name": "saved_pwd_confirm",
-      "value": "Confirm password"
+      "value": "确认密码"
     },
     {
       "name": "saved_pwd_add_busy",
-      "value": "Adding…"
+      "value": "添加中…"
     },
     {
       "name": "saved_pwd_add_confirm",
-      "value": "Add"
+      "value": "确认添加"
     },
     {
       "name": "saved_pwd_serial_invalid",
-      "value": "Enter a valid serial number"
+      "value": "请输入有效的序列号"
     },
     {
       "name": "saved_pwd_password_required",
-      "value": "Enter a password"
+      "value": "请输入密码"
     },
     {
       "name": "saved_pwd_mismatch",
-      "value": "The passwords do not match"
+      "value": "两次输入的密码不一致"
     },
     {
       "name": "saved_pwd_exists",
-      "value": "A password is already stored for this serial number"
+      "value": "该序列号已存在"
     },
     {
       "name": "saved_pwd_added",
-      "value": "Password stored."
+      "value": "添加成功"
     },
     {
       "name": "saved_pwd_delete_title",
-      "value": "Remove stored password"
+      "value": "删除已保存密码"
     },
     {
       "name": "saved_pwd_delete_message",
-      "value": "Remove the stored password for serial number %d? You will need to enter the password again to connect."
+      "value": "确定删除序列号 %d 的已保存会话密码？删除后连接该卡片需重新输入密码。"
     },
     {
       "name": "saved_pwd_delete_busy",
-      "value": "Removing…"
+      "value": "删除中…"
     },
     {
       "name": "saved_pwd_delete_confirm",
-      "value": "Remove"
+      "value": "确认删除"
     },
     {
       "name": "saved_pwd_deleted",
-      "value": "Password forgotten."
+      "value": "已删除"
     },
     {
       "name": "connect_title",
-      "value": "Select connection method"
+      "value": "选择连接方式"
     },
     {
       "name": "connect_usb_group",
-      "value": "USB devices"
+      "value": "USB 设备"
     },
     {
       "name": "connect_usb_none",
-      "value": "No USB security key detected (CCID interface required)"
+      "value": "未发现 USB 安全卡片（需含 CCID 接口）"
     },
     {
       "name": "connect_connected",
-      "value": "Connected"
+      "value": "已连接"
     },
     {
       "name": "connect_nfc_switch_off_hint",
-      "value": "You can still connect via USB, or enable NFC in system settings"
+      "value": "开关未开启时也可选择 USB 连接，或到系统设置开启 NFC"
     },
     {
       "name": "password_dialog_placeholder",
-      "value": "Password"
+      "value": "安全密码"
     },
     {
       "name": "password_dialog_title_session",
-      "value": "Session password"
+      "value": "会话安全密码"
     },
     {
       "name": "password_dialog_hint_session",
-      "value": "Leave empty for no session password (affects next unlock)"
+      "value": "留空表示无会话密码（影响下次验证）"
     },
     {
       "name": "password_dialog_title_unlock",
-      "value": "Enter password"
+      "value": "输入安全密码"
     },
     {
       "name": "password_dialog_hint_unlock",
-      "value": "The security key is password protected. Enter the password to continue."
+      "value": "卡片已设置安全密码，请输入后继续"
     },
     {
       "name": "nfc_switch_off",
-      "value": "NFC is turned off. Enable it in system settings and try again."
+      "value": "系统 NFC 开关未打开，请到系统设置开启后重试"
     },
     {
       "name": "nfc_unsupported",
-      "value": "NFC is not supported on this device"
+      "value": "当前设备不支持 NFC"
     },
     {
       "name": "nfc_unavailable",
-      "value": "NFC hardware unavailable (no NFC chip on emulator)"
+      "value": "NFC 硬件不可用（模拟器环境无 NFC 芯片）"
     },
     {
       "name": "nfc_label_switch_off",
-      "value": "NFC (switch off)"
+      "value": "NFC（开关未开启）"
     },
     {
       "name": "nfc_label_unsupported",
-      "value": "NFC (unsupported)"
+      "value": "NFC（设备不支持）"
     },
     {
       "name": "nfc_label_unavailable",
-      "value": "NFC (unavailable)"
+      "value": "NFC（硬件不可用）"
     },
     {
       "name": "nfc_tap_prompt",
-      "value": "Hold your security key against the phone's NFC reader"
+      "value": "请将安全卡片靠近手机 NFC 感应区"
     },
     {
       "name": "nfc_busy",
-      "value": "Another NFC operation is in progress"
+      "value": "正在进行其他 NFC 操作"
     },
     {
       "name": "nfc_listen_failed",
-      "value": "Failed to start NFC listener. Make sure NFC is enabled."
+      "value": "NFC 监听启动失败，请确认 NFC 已开启"
     },
     {
       "name": "touch_prompt",
-      "value": "Touch your security key to complete the request"
+      "value": "请触摸安全卡片以完成验证"
     },
     {
       "name": "operation_cancelled",
-      "value": "Cancelled"
+      "value": "已取消"
     },
     {
       "name": "err_wrong_password_manual",
-      "value": "Authentication to the security key failed. Wrong password?"
+      "value": "密码错误，解锁失败"
     },
     {
       "name": "err_wrong_password",
-      "value": "Authentication failed. Wrong password?"
+      "value": "密码错误"
     },
     {
       "name": "err_validation_failed",
-      "value": "Authentication failed. Wrong password?"
+      "value": "验证失败，密码错误"
     },
     {
       "name": "err_unlock_failed",
-      "value": "Failed to unlock"
+      "value": "解锁失败"
     },
     {
       "name": "err_unlock_disconnect",
-      "value": "Failed to unlock. Disconnected."
+      "value": "解锁失败，连接已断开"
     },
     {
       "name": "err_unlock_cancelled",
-      "value": "Unlock cancelled"
+      "value": "已取消解锁"
     },
     {
       "name": "err_session_password_set",
-      "value": "Session password set"
+      "value": "会话密码已设置"
     },
     {
       "name": "err_no_connection",
-      "value": "Select a connection method first"
+      "value": "请先选择连接方式"
     },
     {
       "name": "err_account_limit",
-      "value": "No space left on the security key for OATH accounts (max %d)"
+      "value": "卡片凭据数量已达上限（%d 个）"
     },
     {
       "name": "err_credential_not_found",
-      "value": "Account not found"
+      "value": "凭据不存在"
     },
     {
       "name": "err_read_failed_prefix",
-      "value": "Failed to read accounts: %s"
+      "value": "读取令牌失败：%s"
     },
     {
       "name": "err_read_lost",
-      "value": "Failed to read accounts. The security key may be disconnected."
+      "value": "读取令牌失败，卡片可能已断开"
     },
     {
       "name": "err_connection_lost",
-      "value": "Connection lost. Accounts are greyed out."
+      "value": "连接已断开，令牌列表已置灰"
     },
     {
       "name": "err_card_mismatch",
-      "value": "This is not the connected security key (expected %d, got %d)"
+      "value": "该卡片不是当前连接的卡片（期望 %d，实际 %d）"
     },
     {
       "name": "err_card_mismatch_short",
-      "value": "This is not the connected security key"
+      "value": "该卡片不是当前连接的卡片"
     },
     {
       "name": "err_oath_unavailable",
-      "value": "OATH application not available: %s"
+      "value": "OATH 应用不可用：%s"
     },
     {
       "name": "err_missing_salt",
-      "value": "Missing card salt"
+      "value": "缺少卡片 salt"
     },
     {
       "name": "err_calculate_response",
-      "value": "Unexpected CALCULATE response"
+      "value": "CALCULATE 响应异常"
     },
     {
       "name": "err_uri_unsupported",
-      "value": "URI seems to have the wrong format."
+      "value": "不支持的二维码内容"
     },
     {
       "name": "err_uri_missing_name",
-      "value": "Account name is missing"
+      "value": "凭据名称缺失"
     },
     {
       "name": "err_uri_missing_secret",
-      "value": "Missing secret parameter"
+      "value": "缺少 secret 参数"
     },
     {
       "name": "err_migration_missing",
-      "value": "Missing migration data"
+      "value": "迁移数据缺失"
     },
     {
       "name": "err_migration_url_encoded",
-      "value": "Migration data must be URL-decoded first"
+      "value": "迁移数据需先 URL 解码"
     },
     {
       "name": "err_migration_empty",
-      "value": "No valid accounts in migration data"
+      "value": "迁移数据中无有效凭据"
     },
     {
       "name": "err_proto_out_of_range",
-      "value": "Protobuf read out of range"
+      "value": "protobuf 读取越界"
     },
     {
       "name": "err_proto_length_overflow",
-      "value": "Protobuf length out of bounds"
+      "value": "protobuf 长度越界"
     },
     {
       "name": "connected_toast",
-      "value": "Connected %s"
+      "value": "已连接 %s"
     },
     {
       "name": "list_separator",
-      "value": ", "
+      "value": "、"
     }
   ]
 }

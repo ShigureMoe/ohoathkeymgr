@@ -14,6 +14,7 @@ import { OathSession } from '../protocol/OathProtocol';
 import { AppState } from '../viewmodel/AppState';
 import { DeviceInfoStore } from '../viewmodel/DeviceInfoStore';
 import { NfcSessionRunner } from './NfcSessionRunner';
+import { ResUtil } from '../common/ResUtil';
 
 export interface CardChannel {
   /** 当前连接绑定的序列号；-1 表示未绑定 */
@@ -135,8 +136,8 @@ export class NfcCardChannel implements CardChannel {
     const serial = await CardInfoCollector.readSerial(transport);
     if (this.serial >= 0) {
       if (serial !== null && serial !== this.serial) {
-        toast('该卡片不是当前连接的卡片（期望 ' + this.serial + '，实际 ' + serial + '）');
-        throw new Error('该卡片不是当前连接的卡片');
+        toast(ResUtil.strWithArgs($r('app.string.err_card_mismatch'), this.serial, serial));
+        throw new Error(ResUtil.str($r('app.string.err_card_mismatch_short')));
       }
       return;
     }

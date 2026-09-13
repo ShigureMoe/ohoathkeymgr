@@ -20,6 +20,7 @@ import { OathSessionManager } from './OathSessionManager';
 import { TokenRefreshScheduler } from './TokenRefreshScheduler';
 import { NfcSupport } from './NfcSupport';
 import { UsbCardChannel, NfcCardChannel } from './CardChannel';
+import { ResUtil } from '../common/ResUtil';
 
 /** 连接事件监听（struct 字段不能为 interface 类型，故用 class） */
 export class ConnectionListener {
@@ -147,7 +148,7 @@ export class ConnectionManager {
           await transport.close();
         } catch (e) {
         }
-        throw new Error('解锁失败，连接已断开');
+        throw new Error(ResUtil.str($r('app.string.err_unlock_disconnect')));
       }
       const channel = new UsbCardChannel(transport, session, serial);
       OathSessionManager.getInstance().setChannel(channel, hasKey);
@@ -157,8 +158,9 @@ export class ConnectionManager {
         await OathSessionManager.getInstance().refreshCurrent(toast);
       } catch (e) {
         Log.error('USB first refresh failed: %{public}s', errorMessage(e));
-        this.handleUsbLost('读取令牌失败：' + errorMessage(e));
-        throw new Error('读取令牌失败：' + errorMessage(e));
+        // 中文前缀 + 英文技术错误的拼接形态（spec 边界场景：底层错误保持英文）
+        this.handleUsbLost(ResUtil.strWithArgs($r('app.string.err_read_failed_prefix'), errorMessage(e)));
+        throw new Error(ResUtil.strWithArgs($r('app.string.err_read_failed_prefix'), errorMessage(e)));
       }
       TokenRefreshScheduler.getInstance().start();
     } catch (e) {

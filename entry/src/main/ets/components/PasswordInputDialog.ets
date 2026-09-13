@@ -25,14 +25,14 @@ export struct PasswordInputDialog {
             .fontSize(12)
             .fontColor($r('app.color.text_secondary'))
             .textAlign(TextAlign.Center)
-          TextInput({ placeholder: '安全密码', text: this.inputValue })
+          TextInput({ placeholder: $r('app.string.password_dialog_placeholder'), text: this.inputValue })
             .type(InputType.Password)
             .width('100%')
             .onChange((value: string) => {
               this.inputValue = value;
             })
           Row({ space: 40 }) {
-            Button('取消')
+            Button($r('app.string.common_cancel'))
               .width(110)
               .height(38)
               .fontSize(14)
@@ -41,7 +41,7 @@ export struct PasswordInputDialog {
               .onClick(() => {
                 UiDialogBridge.cancel();
               })
-            Button('确定')
+            Button($r('app.string.common_confirm'))
               .width(110)
               .height(38)
               .fontSize(14)

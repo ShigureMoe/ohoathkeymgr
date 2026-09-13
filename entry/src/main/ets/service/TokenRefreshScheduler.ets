@@ -6,6 +6,7 @@ import { TokenStore } from '../viewmodel/TokenStore';
 import { AppState } from '../viewmodel/AppState';
 import { OathSessionManager } from './OathSessionManager';
 import { Log, errorMessage } from '../common/Log';
+import { ResUtil } from '../common/ResUtil';
 
 export class TokenRefreshScheduler {
   private static instance: TokenRefreshScheduler | undefined = undefined;
@@ -66,7 +67,7 @@ export class TokenRefreshScheduler {
         Log.error('USB heartbeat refresh failed: %{public}s', errorMessage(e));
         const handler = TokenRefreshScheduler.lostHandler;
         if (handler !== undefined && AppStorage.get<string>(AppState.KEY_STATUS) === 'connected') {
-          handler('读取令牌失败，卡片可能已断开');
+          handler(ResUtil.str($r('app.string.err_read_lost')));
         }
       });
     }

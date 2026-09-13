@@ -23,7 +23,7 @@ export struct ConnectSheet {
     Stack({ alignContent: Alignment.Center }) {
       if (this.visible) {
         Column({ space: 12 }) {
-          Text('选择连接方式')
+          Text($r('app.string.connect_title'))
             .fontSize(16)
             .fontWeight(FontWeight.Bold)
           Row({ space: 24 }) {
@@ -58,19 +58,19 @@ export struct ConnectSheet {
               .fontColor($r('app.color.text_hint'))
           }
           if (this.nfcAvailability === NfcAvailability.SWITCH_OFF) {
-            Text('开关未开启时也可选择 USB 连接，或到系统设置开启 NFC')
+            Text($r('app.string.connect_nfc_switch_off_hint'))
               .fontSize(11)
               .fontColor($r('app.color.text_hint'))
           }
 
-          Text('USB 设备')
+          Text($r('app.string.connect_usb_group'))
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
             .alignSelf(ItemAlign.Start)
             .margin({ left: 20, top: 8 })
 
           if (this.devices.length === 0) {
-            Text('未发现 USB 安全卡片（需含 CCID 接口）')
+            Text($r('app.string.connect_usb_none'))
               .fontSize(12)
               .fontColor($r('app.color.text_secondary'))
               .margin({ top: 4 })
@@ -88,7 +88,7 @@ export struct ConnectSheet {
                     .alignItems(HorizontalAlign.Start)
                     .layoutWeight(1)
                     if (this.isCurrent(dev)) {
-                      Text('已连接')
+                      Text($r('app.string.connect_connected'))
                         .fontSize(11)
                         .fontColor($r('app.color.accent'))
                     }
@@ -106,7 +106,7 @@ export struct ConnectSheet {
             .width('100%')
             .height(160)
           }
-          Button('取消')
+          Button($r('app.string.common_cancel'))
             .width(160)
             .height(40)
             .fontSize(14)
