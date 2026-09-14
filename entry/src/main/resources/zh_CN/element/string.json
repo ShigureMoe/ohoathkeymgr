@@ -141,6 +141,10 @@
       "value": "兼容性测试"
     },
     {
+      "name": "settings_compat_desc",
+      "value": "以下设备已通过本应用的兼容性测试："
+    },
+    {
       "name": "settings_open_link_failed",
       "value": "打开链接失败"
     },

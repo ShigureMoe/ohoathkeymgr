@@ -141,6 +141,10 @@
       "value": "Compatibility"
     },
     {
+      "name": "settings_compat_desc",
+      "value": "The following devices have been tested for compatibility with this app:"
+    },
+    {
       "name": "settings_open_link_failed",
       "value": "Failed to open link"
     },

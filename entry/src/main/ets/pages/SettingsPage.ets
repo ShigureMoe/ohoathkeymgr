@@ -3,7 +3,8 @@
  *  - 暗黑模式三选一（跟随系统/深色/亮色，持久化）
  *  - 重置安全卡片（输入 RESETTHEKEY 确认）
  *  - 已保存的会话密码（session-password-persist：Navigation 跳转管理页，仅展示/删除）
- *  - 关于应用（作者/项目地址/问题反馈/License/兼容性测试，前四项外链跳转）
+ *  - 兼容性测试（独立选项弹窗展示已测试设备列表）
+ *  - 关于应用（作者/项目地址/问题反馈/License，外链跳转）
  */
 import { common, OpenLinkOptions } from '@kit.AbilityKit';
 import { AppContextHolder } from '../common/AppContextHolder';
@@ -35,6 +36,7 @@ export struct SettingsPage {
   @State resetInput: string = '';
   @State resetBusy: boolean = false;
   @State aboutVisible: boolean = false;
+  @State compatVisible: boolean = false;
 
   aboutToAppear(): void {
     this.themeValue = AppPreferences.getString('ui_theme', ThemeManager.THEME_SYSTEM);
@@ -134,6 +136,22 @@ export struct SettingsPage {
           })
 
           Row() {
+            Text($r('app.string.settings_about_compat'))
+              .fontSize(15)
+            Blank()
+            Text('>')
+              .fontSize(15)
+              .fontColor($r('app.color.text_hint'))
+          }
+          .width('92%')
+          .padding(16)
+          .backgroundColor($r('app.color.surface_card'))
+          .borderRadius(10)
+          .onClick(() => {
+            this.compatVisible = true;
+          })
+
+          Row() {
             Text($r('app.string.settings_about'))
               .fontSize(15)
             Blank()
@@ -162,6 +180,10 @@ export struct SettingsPage {
 
       if (this.aboutVisible) {
         this.aboutDialog()
+      }
+
+      if (this.compatVisible) {
+        this.compatDialog()
       }
     }
     .width('100%')
@@ -303,7 +325,6 @@ export struct SettingsPage {
           this.aboutRow($r('app.string.settings_about_repo'), ABOUT_URL_REPO, ABOUT_URL_REPO)
           this.aboutRow($r('app.string.settings_about_issues'), ABOUT_URL_ISSUES, ABOUT_URL_ISSUES)
           this.aboutRow($r('app.string.settings_about_license'), 'GPL-3.0 license', ABOUT_URL_LICENSE)
-          this.aboutRow($r('app.string.settings_about_compat'), 'Yubikey 5 NFC、Canokeys Pigeon', '')
         }
         .width('100%')
         Button($r('app.string.common_close'))
@@ -330,6 +351,54 @@ export struct SettingsPage {
     .backgroundColor($r('app.color.mask'))
     .onClick(() => {
       this.aboutVisible = false;
+    })
+  }
+
+  // 兼容性测试独立弹窗（从关于应用拆出）：标题 + 说明 + 已测试设备列表
+  @Builder
+  compatDialog() {
+    Stack({ alignContent: Alignment.Center }) {
+      Column({ space: 12 }) {
+        Text($r('app.string.settings_about_compat'))
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+        Text($r('app.string.settings_compat_desc'))
+          .fontSize(12)
+          .fontColor($r('app.color.text_secondary'))
+        Column({ space: 10 }) {
+          Text('Yubikey 5 NFC')
+            .fontSize(14)
+            .fontColor($r('app.color.text_primary'))
+          Text('Canokeys Pigeon')
+            .fontSize(14)
+            .fontColor($r('app.color.text_primary'))
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .padding({ left: 4 })
+        Button($r('app.string.common_close'))
+          .width(110)
+          .height(38)
+          .fontSize(14)
+          .backgroundColor($r('app.color.button_neutral_bg'))
+          .fontColor($r('app.color.button_neutral_fg'))
+          .onClick(() => {
+            this.compatVisible = false;
+          })
+      }
+      .padding(20)
+      .borderRadius(16)
+      .backgroundColor($r('app.color.surface_sheet'))
+      .width('86%')
+      .onClick(() => {
+        // 空回调拦截卡片区域点击，避免点卡片内容误触外层遮罩导致弹窗关闭
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor($r('app.color.mask'))
+    .onClick(() => {
+      this.compatVisible = false;
     })
   }
 
