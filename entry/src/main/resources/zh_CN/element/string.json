@@ -170,7 +170,7 @@
     },
     {
       "name": "token_delete_message",
-      "value": "确定从安全卡片删除该凭据？"
+      "value": "确定从安全卡片删除凭据“%s”？"
     },
     {
       "name": "token_deleted",

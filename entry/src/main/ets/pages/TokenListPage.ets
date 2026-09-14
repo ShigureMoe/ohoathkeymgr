@@ -24,6 +24,8 @@ export struct TokenListPage {
   @StorageProp('connMode') connMode: string = 'none';
   @State showManual: boolean = false;
   @State showUriSheet: boolean = false;
+  /** 删除执行中标志（Promise 未决期间忽略新的删除触发，UI 不需响应，故非 @State） */
+  private deleteBusy: boolean = false;
 
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
@@ -44,12 +46,10 @@ export struct TokenListPage {
       } else {
         List({ space: 10 }) {
           ForEach(this.store.items, (item: TokenListItem) => {
-            ListItem() {
-              TokenListItemComp({
-                item: item,
-                callbacks: this.itemCallbacks()
-              })
-            }
+            TokenListItemComp({
+              item: item,
+              callbacks: this.itemCallbacks()
+            })
           }, (item: TokenListItem) => item.cred.name)
         }
         .width('100%')
@@ -106,23 +106,39 @@ export struct TokenListPage {
   }
 
   private confirmDelete(name: string): void {
-    this.getUIContext().getPromptAction().showDialog({
-      title: $r('app.string.token_delete_title'),
-      message: $r('app.string.token_delete_message', name),
-      buttons: [
-        { text: $r('app.string.common_cancel'), color: $r('app.color.text_secondary') },
-        { text: $r('app.string.common_delete'), color: $r('app.color.danger') }
-      ]
-    }).then((res: promptAction.ShowDialogSuccessResponse) => {
-      if (res.index !== 1) {
-        return;
-      }
-      OathSessionManager.getInstance().deleteCredential(name, this.toast).then(() => {
-        this.toast(ResUtil.str($r('app.string.token_deleted')));
-      }).catch((err: Error) => {
-        this.toast(err.message);
+    if (this.deleteBusy) {
+      return;
+    }
+    if (this.connMode === 'usb') {
+      this.getUIContext().getPromptAction().showDialog({
+        title: $r('app.string.token_delete_title'),
+        message: $r('app.string.token_delete_message', name),
+        buttons: [
+          { text: $r('app.string.common_cancel'), color: $r('app.color.text_secondary') },
+          { text: $r('app.string.common_delete'), color: $r('app.color.danger') }
+        ]
+      }).then((res: promptAction.ShowDialogSuccessResponse) => {
+        if (res.index !== 1) {
+          return;
+        }
+        this.executeDelete(name);
+      }).catch(() => {
       });
-    }).catch(() => {
+    } else {
+      // NFC（及其他模式）：删除需二次碰卡即物理确认，跳过弹窗直接执行
+      this.executeDelete(name);
+    }
+  }
+
+  /** 执行删除：busy 置位 → 发删除命令 → 成功/失败 toast → 复位 busy */
+  private executeDelete(name: string): void {
+    this.deleteBusy = true;
+    OathSessionManager.getInstance().deleteCredential(name, this.toast).then(() => {
+      this.toast(ResUtil.str($r('app.string.token_deleted')));
+    }).catch((err: Error) => {
+      this.toast(err.message);
+    }).finally(() => {
+      this.deleteBusy = false;
     });
   }
 

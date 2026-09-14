@@ -27,20 +27,26 @@ export class TokenItemCallbacks {
 export struct TokenListItemComp {
   @ObjectLink item: TokenListItem;
   callbacks: TokenItemCallbacks = new TokenItemCallbacks();
-  @State showDelete: boolean = false;
 
   @Builder
   deleteButton() {
-    Button($r('app.string.common_delete'))
-      .width(64)
-      .height('100%')
+    Row() {
+      Button({ type: ButtonType.Circle }) {
+        Image($r('app.media.icon_delete'))
+          .width(18)
+          .height(18)
+          .fillColor($r('app.color.surface_sheet'))
+      }
+      .width(40)
+      .height(40)
       .backgroundColor($r('app.color.danger_bg'))
-      .fontColor($r('app.color.surface_sheet'))
-      .fontSize(14)
-      .borderRadius(0)
       .onClick(() => {
         this.callbacks.onDelete(this.item.cred.name);
       })
+    }
+    .height('100%')
+    .justifyContent(FlexAlign.End)
+    .padding({ right: 16 })
   }
 
   build() {
