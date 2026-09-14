@@ -369,7 +369,7 @@ export struct SettingsPage {
           Text('Yubikey 5 NFC')
             .fontSize(14)
             .fontColor($r('app.color.text_primary'))
-          Text('Canokeys Pigeon')
+          Text('Canokeys Pigeon (USB Mode)')
             .fontSize(14)
             .fontColor($r('app.color.text_primary'))
         }
