@@ -183,12 +183,16 @@ export class TokenStore {
     }
   }
 
-  /** 删除一项（删除凭据后） */
+  /**
+   * 删除一项（删除凭据后）。
+   * 必须整组赋值（而非 splice 原地移除）：V1 @Observed/@ObjectLink 仅感知
+   * 第一层属性赋值，splice 不改数组引用、UI 不刷新（删除后条目要等
+   * 下次刷新/碰卡才消失）；整组赋值触发 ForEach 差量刷新，filter 保留
+   * 全部未删除元素的原实例引用，@ObjectLink 绑定不脱钩——与
+   * setFromRefresh 的"整组赋值 + 实例复用"惯例一致。
+   */
   removeByName(name: string): void {
-    const idx = this.items.findIndex((it: TokenListItem) => it.cred.name === name);
-    if (idx >= 0) {
-      this.items.splice(idx, 1);
-    }
+    this.items = this.items.filter((it: TokenListItem) => it.cred.name !== name);
     if (this.credMap.has(name)) {
       this.credMap.delete(name);
     }
