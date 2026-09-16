@@ -12,3 +12,7 @@
 /.appanalyzer
 .cache
 example
+.verify-screenshots/
+.verify-ui/
+.verify_screenshots/
+spec/
