@@ -1,6 +1,7 @@
 /**
  * 设置页（M5-6 / S10/S12）：
  *  - 暗黑模式三选一（跟随系统/深色/亮色，持久化）
+ *  - 语言设置（fix-lang-switch-jank）：自绘下拉弹卡选择（无 Menu 子窗口），持久化即时 + 防抖应用
  *  - 重置安全卡片（输入 RESETTHEKEY 确认）
  *  - 已保存的会话密码（session-password-persist：Navigation 跳转管理页，仅展示/删除）
  *  - 兼容性测试（独立选项弹窗展示已测试设备列表）
@@ -20,9 +21,6 @@ const ABOUT_URL_REPO: string = 'https://github.com/ShigureMoe/ohoathkeymgr';
 const ABOUT_URL_ISSUES: string = 'https://github.com/ShigureMoe/ohoathkeymgr/issues';
 const ABOUT_URL_LICENSE: string = 'https://raw.githubusercontent.com/ShigureMoe/ohoathkeymgr/refs/heads/master/COPYING';
 
-// 语言偏好内部值（与 Select 选项下标一一对应；内部值不翻译，仅展示层资源化）
-const LANGUAGE_VALUES: string[] = [LanguageManager.FOLLOW_SYSTEM, LanguageManager.ZH_HANS, LanguageManager.EN_US];
-
 @Component
 export struct SettingsPage {
   toast: (msg: string) => void = (msg: string) => {
@@ -32,6 +30,8 @@ export struct SettingsPage {
   @Consume('navPathStack') navPathStack: NavPathStack;
   @State themeValue: string = 'system';
   @State langValue: string = LanguageManager.FOLLOW_SYSTEM;
+  // 语言下拉展开标志（fix-lang-switch-jank D1）：收起为默认态；点选项/点遮罩置 false
+  @State langDropdownOpen: boolean = false;
   @State resetDialogVisible: boolean = false;
   @State resetInput: string = '';
   @State resetBusy: boolean = false;
@@ -73,7 +73,7 @@ export struct SettingsPage {
           .backgroundColor($r('app.color.surface_card'))
           .borderRadius(10)
 
-          // 语言设置组（app-i18n US1）：下拉框三选项，选择即时生效并持久化
+          // 语言设置组（fix-lang-switch-jank US2）：自绘下拉——收起行点击展开根层选项弹卡（无 Menu 子窗口）
           Column({ space: 0 }) {
             Row() {
               Text($r('app.string.settings_language'))
@@ -82,22 +82,26 @@ export struct SettingsPage {
             }
             .width('100%')
             .padding(16)
-            Select(this.languageOptions())
-              .selected(this.languageIndex())
-              .value(this.languageLabelRes())
-              .onSelect((index: number) => {
-                this.onLanguageSelect(index);
-              })
-              .width('100%')
-              .font({ size: 14 })
-              .selectedOptionFont({ size: 14 })
-              .optionFont({ size: 14 })
-              .backgroundColor($r('app.color.surface_card'))
-              .margin({ left: 16, right: 16, bottom: 14 })
+
+            // 收起态整行：当前语言文字 + 下拉箭头；排版对齐暗黑模式选项区
+            Row() {
+              Text(this.languageLabelRes())
+                .fontSize(14)
+              Blank()
+              Text('▾')
+                .fontSize(14)
+                .fontColor($r('app.color.text_hint'))
+            }
+            .width('100%')
+            .padding({ left: 16, right: 16, bottom: 14 })
           }
           .width('92%')
           .backgroundColor($r('app.color.surface_card'))
           .borderRadius(10)
+          // 整卡可点击展开（US2）：标题行/值行/卡片空白均可命中，扩大点击热区
+          .onClick(() => {
+            this.langDropdownOpen = !this.langDropdownOpen;
+          })
 
           Row() {
             Text($r('app.string.settings_reset_entry'))
@@ -185,6 +189,20 @@ export struct SettingsPage {
       if (this.compatVisible) {
         this.compatDialog()
       }
+
+      // 语言下拉展开态（fix-lang-switch-jank US2/D5）：先渲染全屏半透明遮罩（点击仅收起、不切换语言），
+      // 后渲染自绘选项弹卡（层级高于遮罩，与 ConnectSheet 弹层同范式：页面内组件、无 Menu 子窗口）
+      if (this.langDropdownOpen) {
+        Stack()
+          .width('100%')
+          .height('100%')
+          .backgroundColor($r('app.color.mask'))
+          .onClick(() => {
+            this.langDropdownOpen = false;
+          })
+
+        this.langOptionsCard()
+      }
     }
     .width('100%')
     .height('100%')
@@ -213,23 +231,9 @@ export struct SettingsPage {
     .width('100%')
   }
 
-  // ---------- 语言设置（app-i18n US1 / D6） ----------
+  // ---------- 语言设置（fix-lang-switch-jank US1/US2） ----------
 
-  private languageOptions(): Array<SelectOption> {
-    return [
-      { value: $r('app.string.lang_follow_system') },
-      { value: $r('app.string.lang_chinese') },
-      { value: $r('app.string.lang_english') }
-    ];
-  }
-
-  /** 当前偏好对应的选项下标 */
-  private languageIndex(): number {
-    const idx = LANGUAGE_VALUES.indexOf(this.langValue);
-    return idx >= 0 ? idx : 0;
-  }
-
-  /** Select 收起态显示文本（跟随语言切换取资源） */
+  /** 收起行显示文本（跟随语言切换取资源） */
   private languageLabelRes(): Resource {
     if (this.langValue === LanguageManager.ZH_HANS) {
       return $r('app.string.lang_chinese');
@@ -240,15 +244,73 @@ export struct SettingsPage {
     return $r('app.string.lang_follow_system');
   }
 
-  /** 下拉框选择：即时生效 + 持久化；跟随系统按平台约束提示重启生效（D1） */
-  private onLanguageSelect(index: number): void {
-    const value = index >= 0 && index < LANGUAGE_VALUES.length
-      ? LANGUAGE_VALUES[index] : LanguageManager.FOLLOW_SYSTEM;
+  /**
+   * 选项点击（US1/D4 时序）：先收起弹卡并移除遮罩 → 更新选中态 → 持久化 + 300ms 防抖应用，
+   * 确保语言应用触发的全局 $r 刷新发生时页面无展开弹层/遮罩；
+   * 跟随系统按平台约束提示重启生效
+   */
+  private onLanguagePick(value: string): void {
+    this.langDropdownOpen = false;
     this.langValue = value;
     LanguageManager.persistAndApply(value);
     if (value === LanguageManager.FOLLOW_SYSTEM) {
       this.toast(ResUtil.str($r('app.string.settings_language_restart_hint')));
     }
+  }
+
+  /**
+   * 语言选项弹卡（根 Stack 层渲染、层级高于遮罩）：偏上居中卡片内三行选项，
+   * 与 ConnectSheet 弹层同范式；空白区域点击穿透至遮罩收起
+   */
+  @Builder
+  langOptionsCard() {
+    Stack({ alignContent: Alignment.Center }) {
+      Column({ space: 4 }) {
+        Text($r('app.string.settings_language'))
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .alignSelf(ItemAlign.Start)
+          .margin({ left: 4 })
+        this.langOptionRow($r('app.string.lang_follow_system'), LanguageManager.FOLLOW_SYSTEM)
+        this.langOptionRow($r('app.string.lang_chinese'), LanguageManager.ZH_HANS)
+        this.langOptionRow($r('app.string.lang_english'), LanguageManager.EN_US)
+      }
+      .padding(20)
+      .borderRadius(16)
+      .backgroundColor($r('app.color.surface_sheet'))
+      .width('88%')
+      .margin({ bottom: '20%' })
+      .onClick(() => {
+        // 空回调拦截卡片区域点击（onClick 为非冒泡系统手势、子组件优先识别），
+        // 避免点卡片内容误触外层遮罩导致收起
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .hitTestBehavior(HitTestMode.Transparent)
+  }
+
+  /** 选项行（D3）：排版参照暗黑模式单选行；当前生效项 accent_soft 高亮背景 + token_accent 主题色文字 */
+  @Builder
+  langOptionRow(label: Resource, value: string) {
+    Row() {
+      Text(label)
+        .fontSize(14)
+        .fontColor(this.langValue === value ? $r('app.color.token_accent') : $r('app.color.text_primary'))
+      Blank()
+      if (this.langValue === value) {
+        Text('✓')
+          .fontSize(14)
+          .fontColor($r('app.color.token_accent'))
+      }
+    }
+    .width('100%')
+    .padding({ left: 12, right: 12, top: 12, bottom: 12 })
+    .borderRadius(8)
+    .backgroundColor(this.langValue === value ? $r('app.color.accent_soft') : Color.Transparent)
+    .onClick(() => {
+      this.onLanguagePick(value);
+    })
   }
 
   @Builder
