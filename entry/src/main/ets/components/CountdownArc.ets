@@ -1,4 +1,4 @@
-/** 环形倒计时（TOTP）：圆环 + 中央剩余秒数 */
+/** 环形倒计时（TOTP）：圆环 + 中央剩余秒数；整体不参与无障碍聚焦（信息已并入列表项合并朗读） */
 @Component
 export struct CountdownArc {
   @Prop remaining: number = 30;
@@ -24,5 +24,6 @@ export struct CountdownArc {
     }
     .width(44)
     .height(44)
+    .accessibilityLevel('no-hide-descendants')
   }
 }

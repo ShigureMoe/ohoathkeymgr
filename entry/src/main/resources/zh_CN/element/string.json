@@ -185,10 +185,6 @@
       "value": "凭据已删除"
     },
     {
-      "name": "token_long_press_copy",
-      "value": "长按复制"
-    },
-    {
       "name": "token_copied",
       "value": "令牌已复制"
     },
@@ -703,6 +699,126 @@
     {
       "name": "list_separator",
       "value": "、"
+    },
+    {
+      "name": "a11y_topbar_key",
+      "value": "会话密码设置"
+    },
+    {
+      "name": "a11y_topbar_connect_none",
+      "value": "选择连接方式"
+    },
+    {
+      "name": "a11y_topbar_connect_nfc",
+      "value": "近场通信连接，已连接"
+    },
+    {
+      "name": "a11y_topbar_connect_usb_connecting",
+      "value": "USB 连接中"
+    },
+    {
+      "name": "a11y_topbar_connect_usb_connected",
+      "value": "USB 连接，已连接"
+    },
+    {
+      "name": "a11y_topbar_connect_disconnected",
+      "value": "连接已断开，点击选择连接方式"
+    },
+    {
+      "name": "a11y_fab_add",
+      "value": "添加令牌"
+    },
+    {
+      "name": "a11y_fab_close",
+      "value": "收起菜单"
+    },
+    {
+      "name": "a11y_item_code",
+      "value": "验证码 %s"
+    },
+    {
+      "name": "a11y_item_remaining",
+      "value": "剩余 %d 秒"
+    },
+    {
+      "name": "a11y_item_expired",
+      "value": "已过期"
+    },
+    {
+      "name": "a11y_item_error",
+      "value": "计算错误"
+    },
+    {
+      "name": "a11y_item_hotp_idle",
+      "value": "未生成验证码"
+    },
+    {
+      "name": "a11y_item_touch",
+      "value": "需要触摸的凭据"
+    },
+    {
+      "name": "a11y_item_touch_waiting",
+      "value": "等待触摸"
+    },
+    {
+      "name": "a11y_btn_hotp_refresh",
+      "value": "刷新验证码"
+    },
+    {
+      "name": "a11y_btn_touch",
+      "value": "触摸计算"
+    },
+    {
+      "name": "menu_token_actions_title",
+      "value": "令牌操作"
+    },
+    {
+      "name": "menu_copy_code",
+      "value": "复制验证码"
+    },
+    {
+      "name": "menu_request_new_code",
+      "value": "获取新验证码"
+    },
+    {
+      "name": "menu_touch_calc",
+      "value": "触摸计算"
+    },
+    {
+      "name": "menu_delete_token",
+      "value": "删除令牌"
+    },
+    {
+      "name": "a11y_settings_row",
+      "value": "%s，%s"
+    },
+    {
+      "name": "a11y_selected",
+      "value": "已选中"
+    },
+    {
+      "name": "a11y_disabled",
+      "value": "当前不可用"
+    },
+    {
+      "name": "a11y_connect_nfc_ready",
+      "value": "近场通信 NFC，可用"
+    },
+    {
+      "name": "a11y_connect_nfc_off",
+      "value": "近场通信 NFC，开关未开启"
+    },
+    {
+      "name": "a11y_connect_nfc_unsupported",
+      "value": "近场通信 NFC，设备不支持"
+    },
+    {
+      "name": "a11y_connect_nfc_missing",
+      "value": "近场通信 NFC，硬件不可用"
+    },
+    {
+      "name": "a11y_connect_usb_current",
+      "value": "%s，已连接"
     }
   ]
 }

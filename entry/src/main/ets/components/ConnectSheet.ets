@@ -1,11 +1,13 @@
 /**
- * 连接方式选择弹窗（M5-2 / S1/S2）：
+ * 连接方式选择弹窗（M5-2 / S1/S2 + accessibility-optimization）：
  *  - NFC：按可用性细分（READY 可点；SWITCH_OFF/UNSUPPORTED/HARDWARE_MISSING 说明并禁用）
  *  - USB：列出 CCID 设备（名称+VID/PID）；无设备则灰色不可选
+ *  - 无障碍（US3）：NFC 选项/USB 设备项整体单焦点，朗读名称 + 可用性/已连接状态
  */
 import { UsbCardDevice } from '../common/UsbCcidTransport';
 import { NfcAvailability } from '../model/UiState';
 import { NfcSupport } from '../service/NfcSupport';
+import { ResUtil } from '../common/ResUtil';
 
 @Component
 export struct ConnectSheet {
@@ -48,6 +50,8 @@ export struct ConnectSheet {
             .onClick(() => {
               this.onSelectNfc();
             })
+            .accessibilityGroup(true)
+            .accessibilityText(ResUtil.str(this.nfcA11yRes()))
           }
           .width('100%')
           .justifyContent(FlexAlign.Center)
@@ -97,6 +101,9 @@ export struct ConnectSheet {
                   .padding({ left: 14, right: 14, top: 12, bottom: 12 })
                   .backgroundColor($r('app.color.surface_card'))
                   .borderRadius(8)
+                  .accessibilityGroup(true)
+                  .accessibilityText(this.usbItemA11yText(dev))
+                  .accessibilityRole(AccessibilityRoleType.BUTTON)
                 }
                 .onClick(() => {
                   this.onSelectUsb(dev);
@@ -132,6 +139,28 @@ export struct ConnectSheet {
 
   private isCurrent(dev: UsbCardDevice): boolean {
     return this.currentMode === 'usb' && this.currentUsbSerial === dev.device.name;
+  }
+
+  /** NFC 选项朗读文本：名称 + 可用性状态（可用/开关未开启/设备不支持/硬件不可用） */
+  private nfcA11yRes(): Resource {
+    if (this.nfcAvailability === NfcAvailability.READY) {
+      return $r('app.string.a11y_connect_nfc_ready');
+    }
+    if (this.nfcAvailability === NfcAvailability.SWITCH_OFF) {
+      return $r('app.string.a11y_connect_nfc_off');
+    }
+    if (this.nfcAvailability === NfcAvailability.UNSUPPORTED) {
+      return $r('app.string.a11y_connect_nfc_unsupported');
+    }
+    return $r('app.string.a11y_connect_nfc_missing');
+  }
+
+  /** USB 设备项朗读文本：设备名（当前连接项后缀「已连接」） */
+  private usbItemA11yText(dev: UsbCardDevice): string {
+    if (this.isCurrent(dev)) {
+      return ResUtil.strWithArgs($r('app.string.a11y_connect_usb_current'), dev.label);
+    }
+    return dev.label;
   }
 
   /** NFC 是否可用（非 READY 一律置灰） */

@@ -61,6 +61,9 @@ export struct SettingsPage {
             }
             .width('100%')
             .padding(16)
+            .accessibilityGroup(true)
+            .accessibilityText(ResUtil.strWithArgs($r('app.string.a11y_settings_row'),
+              ResUtil.str($r('app.string.settings_dark_mode')), this.currentThemeLabel()))
             Column({ space: 12 }) {
               this.themeRow($r('app.string.settings_theme_system'), ThemeManager.THEME_SYSTEM)
               this.themeRow($r('app.string.settings_theme_dark'), ThemeManager.THEME_DARK)
@@ -102,6 +105,9 @@ export struct SettingsPage {
           .onClick(() => {
             this.langDropdownOpen = !this.langDropdownOpen;
           })
+          .accessibilityGroup(true)
+          .accessibilityText(ResUtil.strWithArgs($r('app.string.a11y_settings_row'),
+            ResUtil.str($r('app.string.settings_language')), ResUtil.str(this.languageLabelRes())))
 
           Row() {
             Text($r('app.string.settings_reset_entry'))
@@ -121,6 +127,8 @@ export struct SettingsPage {
             this.resetInput = '';
             this.resetDialogVisible = true;
           })
+          .accessibilityGroup(true)
+          .accessibilityText(this.resetRowA11yText())
 
           Row() {
             Text($r('app.string.settings_saved_passwords'))
@@ -138,6 +146,8 @@ export struct SettingsPage {
             // 管理本地持久化数据，与连接状态无关（不随连接置灰）
             this.navPathStack.pushPathByName('savedPasswords', null);
           })
+          .accessibilityGroup(true)
+          .accessibilityText(ResUtil.str($r('app.string.settings_saved_passwords')))
 
           Row() {
             Text($r('app.string.settings_about_compat'))
@@ -154,6 +164,8 @@ export struct SettingsPage {
           .onClick(() => {
             this.compatVisible = true;
           })
+          .accessibilityGroup(true)
+          .accessibilityText(ResUtil.str($r('app.string.settings_about_compat')))
 
           Row() {
             Text($r('app.string.settings_about'))
@@ -170,6 +182,8 @@ export struct SettingsPage {
           .onClick(() => {
             this.aboutVisible = true;
           })
+          .accessibilityGroup(true)
+          .accessibilityText(ResUtil.str($r('app.string.settings_about')))
         }
         .width('100%')
         .padding({ top: 72, bottom: 156 })
@@ -229,9 +243,42 @@ export struct SettingsPage {
         })
     }
     .width('100%')
+    .accessibilityGroup(true)
+    .accessibilityText(this.selectableA11yText(ResUtil.str(label), this.themeValue === value))
+    .accessibilityRole(AccessibilityRoleType.RADIO)
   }
 
   // ---------- 语言设置（fix-lang-switch-jank US1/US2） ----------
+
+  /** 暗黑模式标题行朗读用的当前主题名（随语言切换取资源） */
+  private currentThemeLabel(): string {
+    if (this.themeValue === ThemeManager.THEME_DARK) {
+      return ResUtil.str($r('app.string.settings_theme_dark'));
+    }
+    if (this.themeValue === ThemeManager.THEME_LIGHT) {
+      return ResUtil.str($r('app.string.settings_theme_light'));
+    }
+    return ResUtil.str($r('app.string.settings_theme_system'));
+  }
+
+  /** 重置行朗读文本：未连接时并入「当前不可用」说明 */
+  private resetRowA11yText(): string {
+    const title = ResUtil.str($r('app.string.settings_reset_entry'));
+    if (this.connMode === 'none') {
+      return ResUtil.strWithArgs($r('app.string.a11y_settings_row'), title,
+        ResUtil.str($r('app.string.a11y_disabled')));
+    }
+    return title;
+  }
+
+  /** 可选项朗读文本：当前生效项后缀「已选中」（仅当前项） */
+  private selectableA11yText(label: string, selected: boolean): string {
+    if (selected) {
+      return ResUtil.strWithArgs($r('app.string.a11y_settings_row'), label,
+        ResUtil.str($r('app.string.a11y_selected')));
+    }
+    return label;
+  }
 
   /** 收起行显示文本（跟随语言切换取资源） */
   private languageLabelRes(): Resource {
@@ -311,6 +358,9 @@ export struct SettingsPage {
     .onClick(() => {
       this.onLanguagePick(value);
     })
+    .accessibilityGroup(true)
+    .accessibilityText(this.selectableA11yText(ResUtil.str(label), this.langValue === value))
+    .accessibilityRole(AccessibilityRoleType.BUTTON)
   }
 
   @Builder

@@ -122,6 +122,8 @@ export struct SavedPasswordPage {
     .onClick(() => {
       this.openAddDialog();
     })
+    .accessibilityGroup(true)
+    .accessibilityText(ResUtil.str($r('app.string.saved_pwd_add_title')))
   }
 
   @Builder

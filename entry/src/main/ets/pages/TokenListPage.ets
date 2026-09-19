@@ -1,6 +1,7 @@
 /**
- * 令牌列表页（M5-3）：列表 + 空态/错误态 + 浮动"+"菜单 + 手动添加弹层
- * 交互：长按复制（item 内）、左滑删除（确认后 DELETE）、HOTP 刷新、触摸凭据计算
+ * 令牌列表页（M5-3 + accessibility-optimization）：列表 + 空态/错误态 + 浮动"+"菜单 + 手动添加弹层
+ * 交互：点击列表项弹出令牌操作菜单（复制验证码/HOTP 刷新/触摸计算/删除确认）、
+ * 菜单外点击关闭；复制逻辑单一来源在本页（copyCode）
  */
 import { TokenListItem } from '../viewmodel/TokenStore';
 import { TokenStore } from '../viewmodel/TokenStore';
@@ -9,12 +10,14 @@ import { ScanService } from '../service/ScanService';
 import { UriImporter } from '../viewmodel/UriImporter';
 import { OtpauthParser } from '../utils/OtpauthParser';
 import { TokenListItemComp, TokenItemCallbacks } from '../components/TokenListItem';
+import { TokenActionMenu } from '../components/TokenActionMenu';
 import { AddFabMenu } from '../components/AddFabMenu';
 import { ManualAddSheet } from '../components/ManualAddSheet';
 import { AddByUriSheet } from '../components/AddByUriSheet';
 import { AppState } from '../viewmodel/AppState';
 import { ResUtil } from '../common/ResUtil';
 import { promptAction } from '@kit.ArkUI';
+import { pasteboard } from '@kit.BasicServicesKit';
 
 @Component
 export struct TokenListPage {
@@ -24,6 +27,9 @@ export struct TokenListPage {
   @StorageProp('connMode') connMode: string = 'none';
   @State showManual: boolean = false;
   @State showUriSheet: boolean = false;
+  // 令牌操作菜单状态（US2）：目标令牌名（null=关闭）+ 弹层可见标志（@Link 数据源）
+  @State actionMenuName: string | null = null;
+  @State actionMenuVisible: boolean = false;
   /** 删除执行中标志（Promise 未决期间忽略新的删除触发，UI 不需响应，故非 @State） */
   private deleteBusy: boolean = false;
 
@@ -76,6 +82,34 @@ export struct TokenListPage {
         visible: this.showUriSheet,
         toast: this.toast
       })
+
+      // 令牌操作菜单（US2）：if 条件挂载——菜单打开且目标令牌仍存在时渲染；
+      // 目标令牌被删除/列表刷新后自动关闭（条件失效即销毁弹层）
+      if (this.actionMenuVisible && this.findActionMenuItem() !== undefined) {
+        TokenActionMenu({
+          visible: this.actionMenuVisible,
+          item: this.findActionMenuItem(),
+          onCopy: (name: string) => {
+            this.closeActionMenu();
+            this.copyCode(name);
+          },
+          onHotpRefresh: (name: string) => {
+            this.closeActionMenu();
+            this.refreshHotp(name);
+          },
+          onTouchTap: (name: string) => {
+            this.closeActionMenu();
+            this.touchCalculate(name);
+          },
+          onDelete: (name: string) => {
+            this.closeActionMenu();
+            this.confirmDelete(name);
+          },
+          onDismiss: () => {
+            this.closeActionMenu();
+          }
+        })
+      }
     }
     .width('100%')
     .height('100%')
@@ -83,6 +117,9 @@ export struct TokenListPage {
 
   private itemCallbacks(): TokenItemCallbacks {
     const cb = new TokenItemCallbacks();
+    cb.onItemTap = (name: string) => {
+      this.openActionMenu(name);
+    };
     cb.onDelete = (name: string) => {
       this.confirmDelete(name);
     };
@@ -93,6 +130,40 @@ export struct TokenListPage {
       this.touchCalculate(name);
     };
     return cb;
+  }
+
+  // ---------- 令牌操作菜单（US2） ----------
+
+  /** 查找菜单目标令牌（actionMenuName 失效时返回 undefined，弹层自动关闭） */
+  private findActionMenuItem(): TokenListItem | undefined {
+    const name = this.actionMenuName;
+    if (name === null) {
+      return undefined;
+    }
+    return this.store.items.find((it: TokenListItem) => it.cred.name === name);
+  }
+
+  private openActionMenu(name: string): void {
+    this.actionMenuName = name;
+    this.actionMenuVisible = true;
+  }
+
+  private closeActionMenu(): void {
+    this.actionMenuVisible = false;
+    this.actionMenuName = null;
+  }
+
+  /** 复制验证码（自 TokenListItem 迁移，单一来源）：原始连续码值 → 剪贴板 + 「已复制」toast */
+  private copyCode(name: string): void {
+    const item = this.store.items.find((it: TokenListItem) => it.cred.name === name);
+    if (item === undefined || item.code.length === 0) {
+      return;
+    }
+    const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, item.code);
+    pasteboard.getSystemPasteboard().setData(pasteData).then(() => {
+      this.toast(ResUtil.str($r('app.string.token_copied')));
+    }).catch(() => {
+    });
   }
 
   private emptyTitleRes(): Resource {

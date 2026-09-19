@@ -65,6 +65,8 @@ export struct DevicePage {
           .onClick(() => {
             this.showChangePass = !this.showChangePass;
           })
+          .accessibilityGroup(true)
+          .accessibilityText(ResUtil.str($r('app.string.device_change_password')))
 
           if (this.showChangePass) {
             Column({ space: 10 }) {

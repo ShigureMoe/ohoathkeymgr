@@ -30,6 +30,7 @@ export struct AddByUriSheet {
                 .onClick(() => {
                   this.visible = false;
                 })
+                .accessibilityRole(AccessibilityRoleType.BUTTON)
             }
             .width('100%')
 

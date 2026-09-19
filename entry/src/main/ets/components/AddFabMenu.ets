@@ -1,4 +1,6 @@
-/** 浮动"+"菜单（M5-4）：扫一扫 / 通用令牌 */
+/** 浮动"+"菜单（M5-4）：扫一扫 / 通用令牌；无障碍（US3）：FAB 动态朗读展开/收起，菜单项整行朗读，emoji 与遮罩不抢焦点 */
+import { ResUtil } from '../common/ResUtil';
+
 @Component
 export struct AddFabMenu {
   @State expanded: boolean = false;
@@ -18,10 +20,12 @@ export struct AddFabMenu {
           .onClick(() => {
             this.expanded = false;
           })
+          .accessibilityLevel('no')
         Column({ space: 8 }) {
           Row({ space: 8 }) {
             Text('📷')
               .fontSize(16)
+              .accessibilityLevel('no')
             Text($r('app.string.add_scan'))
               .fontSize(14)
           }
@@ -33,9 +37,13 @@ export struct AddFabMenu {
             this.expanded = false;
             this.onScan();
           })
+          .accessibilityGroup(true)
+          .accessibilityText(ResUtil.str($r('app.string.add_scan')))
+          .accessibilityRole(AccessibilityRoleType.BUTTON)
           Row({ space: 8 }) {
             Text('🔑')
               .fontSize(16)
+              .accessibilityLevel('no')
             Text($r('app.string.add_manual'))
               .fontSize(14)
           }
@@ -47,6 +55,9 @@ export struct AddFabMenu {
             this.expanded = false;
             this.onManual();
           })
+          .accessibilityGroup(true)
+          .accessibilityText(ResUtil.str($r('app.string.add_manual')))
+          .accessibilityRole(AccessibilityRoleType.BUTTON)
         }
         .alignItems(HorizontalAlign.End)
         .margin({ right: 12, bottom: 124 })
@@ -69,9 +80,15 @@ export struct AddFabMenu {
       .onClick(() => {
         this.expanded = !this.expanded;
       })
+      .accessibilityText(ResUtil.str(this.fabA11yRes()))
     }
     .width('100%')
     .height('100%')
     .hitTestBehavior(this.expanded ? HitTestMode.Default : HitTestMode.Transparent)
+  }
+
+  /** FAB 朗读文本：展开态读「收起菜单」、收起态读「添加令牌」 */
+  private fabA11yRes(): Resource {
+    return this.expanded ? $r('app.string.a11y_fab_close') : $r('app.string.a11y_fab_add');
   }
 }

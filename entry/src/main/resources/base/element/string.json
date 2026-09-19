@@ -185,10 +185,6 @@
       "value": "Account deleted."
     },
     {
-      "name": "token_long_press_copy",
-      "value": "Long-press to copy"
-    },
-    {
       "name": "token_copied",
       "value": "Code copied"
     },
@@ -703,6 +699,126 @@
     {
       "name": "list_separator",
       "value": ", "
+    },
+    {
+      "name": "a11y_topbar_key",
+      "value": "Session password settings"
+    },
+    {
+      "name": "a11y_topbar_connect_none",
+      "value": "Select connection method"
+    },
+    {
+      "name": "a11y_topbar_connect_nfc",
+      "value": "NFC, connected"
+    },
+    {
+      "name": "a11y_topbar_connect_usb_connecting",
+      "value": "USB connecting"
+    },
+    {
+      "name": "a11y_topbar_connect_usb_connected",
+      "value": "USB, connected"
+    },
+    {
+      "name": "a11y_topbar_connect_disconnected",
+      "value": "Disconnected, tap to select connection method"
+    },
+    {
+      "name": "a11y_fab_add",
+      "value": "Add token"
+    },
+    {
+      "name": "a11y_fab_close",
+      "value": "Close menu"
+    },
+    {
+      "name": "a11y_item_code",
+      "value": "Code %s"
+    },
+    {
+      "name": "a11y_item_remaining",
+      "value": "%d seconds remaining"
+    },
+    {
+      "name": "a11y_item_expired",
+      "value": "Expired"
+    },
+    {
+      "name": "a11y_item_error",
+      "value": "Error"
+    },
+    {
+      "name": "a11y_item_hotp_idle",
+      "value": "No code generated"
+    },
+    {
+      "name": "a11y_item_touch",
+      "value": "Touch required"
+    },
+    {
+      "name": "a11y_item_touch_waiting",
+      "value": "Waiting for touch"
+    },
+    {
+      "name": "a11y_btn_hotp_refresh",
+      "value": "Refresh code"
+    },
+    {
+      "name": "a11y_btn_touch",
+      "value": "Calculate with touch"
+    },
+    {
+      "name": "menu_token_actions_title",
+      "value": "Token actions"
+    },
+    {
+      "name": "menu_copy_code",
+      "value": "Copy code"
+    },
+    {
+      "name": "menu_request_new_code",
+      "value": "Get new code"
+    },
+    {
+      "name": "menu_touch_calc",
+      "value": "Touch to calculate"
+    },
+    {
+      "name": "menu_delete_token",
+      "value": "Delete token"
+    },
+    {
+      "name": "a11y_settings_row",
+      "value": "%s, %s"
+    },
+    {
+      "name": "a11y_selected",
+      "value": "Selected"
+    },
+    {
+      "name": "a11y_disabled",
+      "value": "Currently unavailable"
+    },
+    {
+      "name": "a11y_connect_nfc_ready",
+      "value": "NFC, available"
+    },
+    {
+      "name": "a11y_connect_nfc_off",
+      "value": "NFC, switch off"
+    },
+    {
+      "name": "a11y_connect_nfc_unsupported",
+      "value": "NFC, unsupported"
+    },
+    {
+      "name": "a11y_connect_nfc_missing",
+      "value": "NFC, hardware missing"
+    },
+    {
+      "name": "a11y_connect_usb_current",
+      "value": "%s, connected"
     }
   ]
 }
