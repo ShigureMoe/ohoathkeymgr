@@ -68,6 +68,9 @@ export struct TokenListPage {
         onScan: () => {
           this.scanAndImport();
         },
+        onUri: () => {
+          this.showUriSheet = true;
+        },
         onManual: () => {
           this.showManual = true;
         }

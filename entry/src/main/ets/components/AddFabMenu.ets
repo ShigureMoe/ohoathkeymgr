@@ -1,10 +1,25 @@
-/** 浮动"+"菜单（M5-4）：扫一扫 / 通用令牌；无障碍（US3）：FAB 动态朗读展开/收起，菜单项整行朗读，emoji 与遮罩不抢焦点 */
+/** 浮动"+"菜单（fab-menu-ux）：等宽菜单项（@Builder 参数化同构）+ 自绘 SVG 线性图标（fillColor 主题色，与全站 icon_* 体系同源）+ 右缘与 FAB 对齐；扫一扫 / 从链接添加 / 通用令牌 */
 import { ResUtil } from '../common/ResUtil';
+
+/** 菜单项统一宽度（等宽保证；按中英最长文案校准，176 容纳 "Add from URI" 不截断） */
+const MENU_ITEM_WIDTH = 176;
+/** 菜单项统一高度 */
+const MENU_ITEM_HEIGHT = 44;
+/** 菜单项垂直间距 */
+const MENU_ITEM_SPACE = 12;
+/** FAB 尺寸与位置（保持现状不动） */
+const FAB_SIZE = 56;
+const FAB_RIGHT = 18;
+const FAB_BOTTOM = 74;
+/** 菜单容器 bottom = FAB bottom(74) + FAB 高(56) + 菜单-FAB 间距(16) */
+const MENU_BOTTOM = FAB_BOTTOM + FAB_SIZE + 16;
 
 @Component
 export struct AddFabMenu {
   @State expanded: boolean = false;
   onScan: () => void = () => {
+  };
+  onUri: () => void = () => {
   };
   onManual: () => void = () => {
   };
@@ -21,61 +36,29 @@ export struct AddFabMenu {
             this.expanded = false;
           })
           .accessibilityLevel('no')
-        Column({ space: 8 }) {
-          Row({ space: 8 }) {
-            Text('📷')
-              .fontSize(16)
-              .accessibilityLevel('no')
-            Text($r('app.string.add_scan'))
-              .fontSize(14)
-          }
-          .padding({ left: 14, right: 14, top: 10, bottom: 10 })
-          .backgroundBlurStyle(BlurStyle.Thin)
-          .borderRadius(18)
-          .shadow({ radius: 10, color: '#33000000', offsetY: 2 })
-          .onClick(() => {
-            this.expanded = false;
-            this.onScan();
-          })
-          .accessibilityGroup(true)
-          .accessibilityText(ResUtil.str($r('app.string.add_scan')))
-          .accessibilityRole(AccessibilityRoleType.BUTTON)
-          Row({ space: 8 }) {
-            Text('🔑')
-              .fontSize(16)
-              .accessibilityLevel('no')
-            Text($r('app.string.add_manual'))
-              .fontSize(14)
-          }
-          .padding({ left: 14, right: 14, top: 10, bottom: 10 })
-          .backgroundBlurStyle(BlurStyle.Thin)
-          .borderRadius(18)
-          .shadow({ radius: 10, color: '#33000000', offsetY: 2 })
-          .onClick(() => {
-            this.expanded = false;
-            this.onManual();
-          })
-          .accessibilityGroup(true)
-          .accessibilityText(ResUtil.str($r('app.string.add_manual')))
-          .accessibilityRole(AccessibilityRoleType.BUTTON)
+        Column({ space: MENU_ITEM_SPACE }) {
+          this.menuItem($r('app.string.add_scan'), $r('app.media.icon_scan'), this.onScan)
+          this.menuItem($r('app.string.add_by_uri_title'), $r('app.media.icon_link'), this.onUri)
+          this.menuItem($r('app.string.add_manual'), $r('app.media.key_horizontal'), this.onManual)
         }
         .alignItems(HorizontalAlign.End)
-        .margin({ right: 12, bottom: 124 })
+        .margin({ right: FAB_RIGHT, bottom: MENU_BOTTOM })
         .zIndex(2)
       }
       Button() {
-        Text(this.expanded ? '×' : '+')
-          .fontSize(30)
-          .fontWeight(FontWeight.Normal)
-          .fontColor($r('app.color.text_primary'))
+        Image(this.expanded ? $r('app.media.icon_xmark') : $r('app.media.icon_plus'))
+          .width(22)
+          .height(22)
+          .fillColor($r('app.color.text_primary'))
+          .accessibilityLevel('no')
       }
-      .width(56)
-      .height(56)
+      .width(FAB_SIZE)
+      .height(FAB_SIZE)
       .borderRadius(28)
       .backgroundColor(Color.Transparent)
       .backgroundBlurStyle(BlurStyle.Thin)
       .shadow({ radius: 12, color: '#44000000', offsetY: 3 })
-      .margin({ right: 18, bottom: 74 })
+      .margin({ right: FAB_RIGHT, bottom: FAB_BOTTOM })
       .zIndex(3)
       .onClick(() => {
         this.expanded = !this.expanded;
@@ -85,6 +68,33 @@ export struct AddFabMenu {
     .width('100%')
     .height('100%')
     .hitTestBehavior(this.expanded ? HitTestMode.Default : HitTestMode.Transparent)
+  }
+
+  /** 等宽菜单项：SVG 线性图标（fillColor 主题色）+ 文案，固定宽高/毛玻璃/阴影，点击先收起再回调；整行朗读 + BUTTON 角色 */
+  @Builder
+  menuItem(label: Resource, iconRes: Resource, onTap: () => void) {
+    Row({ space: 10 }) {
+      Image(iconRes)
+        .width(20)
+        .height(20)
+        .fillColor($r('app.color.text_primary'))
+        .accessibilityLevel('no')
+      Text(label)
+        .fontSize(14)
+    }
+    .width(MENU_ITEM_WIDTH)
+    .height(MENU_ITEM_HEIGHT)
+    .padding({ left: 14, right: 14 })
+    .backgroundBlurStyle(BlurStyle.Thin)
+    .borderRadius(MENU_ITEM_HEIGHT / 2)
+    .shadow({ radius: 10, color: '#33000000', offsetY: 2 })
+    .onClick(() => {
+      this.expanded = false;
+      onTap();
+    })
+    .accessibilityGroup(true)
+    .accessibilityText(ResUtil.str(label))
+    .accessibilityRole(AccessibilityRoleType.BUTTON)
   }
 
   /** FAB 朗读文本：展开态读「收起菜单」、收起态读「添加令牌」 */
