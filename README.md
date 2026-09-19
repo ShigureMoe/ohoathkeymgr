@@ -6,7 +6,7 @@
 
 - **凭据管理**
   - 令牌列表实时展示动态码，TOTP 自动倒计时刷新，HOTP 手动刷新
-  - 长按复制动态码，左滑确认删除凭据（TODO）
+  - 点击弹窗复制动态码或删除凭据
   - 支持触摸（touch）凭据：请求时提示触摸卡片完成计算、NFC下无需触摸
 - **添加凭据（三种方式）**
   - 扫码添加：调用系统 Scan Kit 默认扫码界面，识别 `otpauth://` 二维码
@@ -19,7 +19,10 @@
   - 修改 / 移除卡片安全密码
   - 重置 OATH 应用（需输入 `RESETTHEKEY` 确认，清空全部凭据与密码）
 - **设备信息**：设备类型、序列号、固件版本、OATH 版本、密码保护状态、凭据数量
-- **其他**：暗黑模式三选一（跟随系统 / 深色 / 亮色）
+- **其他**：
+  - 暗黑模式三选一（跟随系统 / 深色 / 亮色）
+  - 中文、英文支持
+  - 无障碍友好
 
 ## 系统要求
 
@@ -44,45 +47,9 @@ devecocli run
 1. **连接卡片**：点击顶栏连接按钮，选择 USB 设备（列表自动枚举）或 NFC 模式（进入"请将卡片靠近 NFC 感应区"状态）。
 2. **解锁**：卡片设置过安全密码时弹出输入框；也可在顶栏钥匙按钮处预先设置会话密码。
 3. **添加凭据**：令牌页右下角 "+" 菜单 → 扫码 / 手动添加 / 从链接添加。
-4. **删除凭据**：令牌条目左滑 → 确认删除。
+4. **删除凭据**：令牌条目单击 → 确认删除。
 5. **修改密码**：设备管理页 → 修改安全密码（留空提交 = 移除密码）。
 6. **重置卡片**：设置页 → 重置安全卡片 → 输入 `RESETTHEKEY` 确认。
-
-## 项目结构
-
-```
-entry/src/main/ets/
-├── entryability/        # EntryAbility（生命周期、权限申请、连接初始化）
-├── protocol/            # OathProtocol：OATH APDU 协议层
-├── common/              # 传输与工具
-│   ├── UsbCcidTransport # USB CCID 传输
-│   ├── CcidProtocol     # CCID 消息层（消息头/分片/链路）
-│   ├── NfcCardTransport # NFC 传输
-│   ├── ApduUtils        # APDU 组装
-│   ├── CardInfoCollector# 设备信息采集（Management 应用）
-├── service/             # 业务服务
-│   ├── ConnectionManager    # 连接编排（USB 长连接 / NFC 待卡监听）
-│   ├── OathSessionManager   # 统一会话入口（解锁编排 + 凭据操作）
-│   ├── CardChannel          # USB/NFC 统一通道抽象
-│   ├── NfcSessionRunner     # NFC 会话执行器
-│   ├── ScanService          # Scan Kit 扫码封装
-│   └── TokenRefreshScheduler# USB 30s 自动刷新
-├── viewmodel/           # TokenStore / UriImporter / AppState / DeviceInfoStore
-├── utils/               # OtpauthParser（otpauth/migration 解析）、Base32
-├── security/            # SessionPasswordStore（会话密码记忆）
-├── storage/             # AppPreferences（设置持久化）
-├── pages/               # 令牌列表 / 设备管理 / 设置
-├── components/          # 顶栏、连接弹窗、添加表单、令牌条目等
-└── model/               # 数据模型（Credential / UiState / DeviceInfoModel）
-```
-
-## 架构说明
-
-- 业务层（`OathSessionManager`）只面向 `CardChannel` 接口，不区分 NFC/USB：
-  - USB：复用已验证的长连接会话，支持后台自动刷新
-  - NFC：每次操作触发"碰卡会话"，触碰的卡片序列号与绑定值不一致时拒绝（防误碰）
-- 凭据导入管线：`ScanService` / `AddByUriSheet` → `OtpauthParser.parseAny` → `UriImporter.importAndConfirm`（重名收集 + 覆盖确认）→ `OathSessionManager.addOutcome`
-- 验证流程：`CALCULATE ALL` 前检查会话锁定状态，已锁定则用会话密码 `DERIVE KEY + VALIDATE` 解锁
 
 ## 许可证
 
