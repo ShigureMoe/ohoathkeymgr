@@ -137,6 +137,14 @@
       "value": "License"
     },
     {
+      "name": "settings_about_author_value",
+      "value": "ShigureMoe"
+    },
+    {
+      "name": "settings_about_license_value",
+      "value": "GPL-3.0 license"
+    },
+    {
       "name": "settings_about_compat",
       "value": "Compatibility"
     },

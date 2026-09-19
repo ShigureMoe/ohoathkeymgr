@@ -383,10 +383,10 @@ export struct SettingsPage {
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
         Column({ space: 12 }) {
-          this.aboutRow($r('app.string.settings_about_author'), 'ShigureMoe', ABOUT_URL_AUTHOR)
+          this.aboutRow($r('app.string.settings_about_author'), $r('app.string.settings_about_author_value'), ABOUT_URL_AUTHOR)
           this.aboutRow($r('app.string.settings_about_repo'), ABOUT_URL_REPO, ABOUT_URL_REPO)
           this.aboutRow($r('app.string.settings_about_issues'), ABOUT_URL_ISSUES, ABOUT_URL_ISSUES)
-          this.aboutRow($r('app.string.settings_about_license'), 'GPL-3.0 license', ABOUT_URL_LICENSE)
+          this.aboutRow($r('app.string.settings_about_license'), $r('app.string.settings_about_license_value'), ABOUT_URL_LICENSE)
         }
         .width('100%')
         Button($r('app.string.common_close'))
@@ -464,9 +464,9 @@ export struct SettingsPage {
     })
   }
 
-  // url 传空串表示纯文本行（不可点击，无点击态反馈）
+  // url 传空串表示纯文本行（不可点击，无点击态反馈）；content 支持资源引用以随语言切换
   @Builder
-  aboutRow(label: Resource, content: string, url: string) {
+  aboutRow(label: Resource, content: ResourceStr, url: string) {
     if (url !== '') {
       Row() {
         this.aboutRowContent(label, content, true)
@@ -486,7 +486,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  aboutRowContent(label: Resource, content: string, isLink: boolean) {
+  aboutRowContent(label: Resource, content: ResourceStr, isLink: boolean) {
     Text(label)
       .fontSize(14)
       .fontColor($r('app.color.text_secondary'))
